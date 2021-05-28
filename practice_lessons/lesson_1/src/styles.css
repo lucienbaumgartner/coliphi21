@@ -1,0 +1,22 @@
+pre:not(.sourceCode) {
+  overflow-x: auto;
+  max-height: 200px;
+}
+pre:not(.sourceCode) code {
+  word-wrap: normal;
+  white-space: pre;
+}
+body {
+  /*
+  background-color: #36413E;
+  */
+}
+p, h3, h2, h1 {
+  /*
+  color: #DCFFFD;
+  */
+}
+
+p, code {
+  font-size: 14pt !important;
+}
