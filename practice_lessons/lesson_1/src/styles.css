@@ -1,22 +1,20 @@
 pre:not(.sourceCode) {
-  overflow-x: auto;
+  overflow: auto !important;
   max-height: 200px;
 }
 pre:not(.sourceCode) code {
-  word-wrap: normal;
   white-space: pre;
 }
-body {
-  /*
-  background-color: #36413E;
-  */
+.sourceCode {
+  overflow: hidden !important;
 }
-p, h3, h2, h1 {
-  /*
-  color: #DCFFFD;
-  */
+pre.sourceCode {
+  border-radius: 10px;
 }
-
-p, code {
-  font-size: 14pt !important;
+#TOC {
+  top: 1%;
+  opacity: 0.5;
+}
+#TOC:hover {
+  opacity: 1;
 }
