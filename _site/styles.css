@@ -1,0 +1,20 @@
+pre:not(.sourceCode) {
+  overflow: auto !important;
+  max-height: 200px;
+}
+pre:not(.sourceCode) code {
+  white-space: pre;
+}
+.sourceCode {
+  overflow: hidden !important;
+}
+pre.sourceCode {
+  border-radius: 10px;
+}
+#TOC {
+  top: 1%;
+  opacity: 0.5;
+}
+#TOC:hover {
+  opacity: 1;
+}
