@@ -2,6 +2,9 @@
 title: "Practice Lesson 1:\nBasics of Corpus Analytics"
 author: "Lucien Baumgartner & Kevin Reuter"
 date: "5/27/2021"
+mail: "lucien.baumgartner@philos.uzh.ch"
+github: "lucienbaumgartner"
+home: "https://lucienbaumgartner.github.io/"
 output: 
   epuRate::epurate:
       toc: TRUE
@@ -11,7 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 options(width = 999)
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 #library(devtools)
 #install_github("holtzy/epuRate")
 library(epuRate)
@@ -189,9 +192,12 @@ sentences[55:65]
 ## as expected, Biden is mentioning ISSUES, but in a combative way
 ```
 
-## Level of analysis: phrasal windows
-In certain situations, we would like to analyze the embedding of certain words. For this, we need to adjust the level of analysis accordingly.
-```{r fig.height=20, fig.width=10, fig.align='center'}
+## Level of analysis: token windows
+Let's compare the word embeddings for 'progress', 'spirit', 'world', 'nation', 'duty', and 'war' 
+between Democrats and Republicans. We define the embedding as a window of +/-10 words around these keywords.
+
+### Prep
+```{r}
 ## tokenization
 toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F)
 toks <- tokens_replace(toks,
@@ -207,42 +213,103 @@ toks <- tokens_replace(toks,
 cstmwrds <- c('upon', 'can', 'us', 'let', 'may', 'us', 'make',
               'must', 'many', 'shall', 'without', 'among',
               'much', 'every', 'ever', 'know', 'new', 'never',
-              'year', 'find', 'see')
+              'year', 'find', 'see', 'good')
 # remove them all
 toks <- tokens_select(toks,  pattern = c(stopwords("en"), cstmwrds), selection = "remove")
-## inspect topfeatures to select interesting words
-dfx <- dfm(toks)
-topfeatures(dfx, 50)
-## defining interesting words
+## define the keywords
 query <- c('progress', 'spirit', 'world', 'nation', 'duty', 'war')
+```
+
+### Feature co-occurence matrix for 'duty'
+```{r}
+## subset data by the party-affiliation
+demo <- tokens_subset(toks, Party == 'Democratic')
+repub <- tokens_subset(toks, Party == 'Republican')
+## select tokens within +/- 10 words around the keyword 'duty'
+toks_demo <- tokens_select(demo, pattern = 'duty', selection = "keep", window = 10, padding = FALSE, verbose = TRUE)
+toks_repub <- tokens_select(repub, pattern = 'duty', selection = "keep", window = 10, padding = FALSE, verbose = TRUE)
+## create feature co-occurence matrix (fcm) with weights within the window
+## the more distance between the words, the less weight the co-occurence gets
+dfcmat_demo <- fcm(toks_demo, context = 'window', window = 10, count = 'weighted', tri = FALSE)
+dfcmat_repub <- fcm(toks_repub, context = 'window', window = 10, count = 'weighted', tri = FALSE)
+dfcmat_demo # have a look at one of the fcms
+## subset the fcm, by selecting those top 50 terms
+dfcmat_demo <- fcm_select(dfcmat_demo, pattern =  names(topfeatures(dfcmat_demo, 51)), selection = "keep")
+dfcmat_repub <- fcm_select(dfcmat_repub, pattern =  names(topfeatures(dfcmat_repub, 51)), selection = "keep")
+```
+
+### Visualization
+```{r fig.height=5, fig.width=10, fig.align='center'}
+## compute varying word-label sizes for each term based on its frequency
+label_sizes_demo <- rowSums(dfcmat_demo)/min(rowSums(dfcmat_demo))*1.2
+## override the size for the term in <i> (cannibalizes the whole space of the plot)
+label_sizes_demo['duty'] <- 0.1
+set.seed(123) # set seed for repoducibility
+p_demo <- quanteda.textplots::textplot_network(dfcmat_demo, 
+                                              min_freq = 0.5,
+                                              edge_alpha = 0.2,
+                                              vertex_size = rowSums(dfcmat_demo)/min(rowSums(dfcmat_demo))/8,
+                                              vertex_labelsize = label_sizes_demo,
+                                              edge_color = 'dodgerblue') + 
+      # additional theme tweaks
+      labs(title = 'Democratic: duty') +
+      theme(plot.title = element_text(face = 'bold'))
+## same for republicans
+label_sizes_repub <- rowSums(dfcmat_repub)/min(rowSums(dfcmat_repub))*1.2
+label_sizes_repub['duty'] <- 0.1
+p_repub <- quanteda.textplots::textplot_network(dfcmat_repub, 
+                                              min_freq = 0.5,
+                                              edge_alpha = 0.2,
+                                              vertex_size = rowSums(dfcmat_repub)/min(rowSums(dfcmat_repub))/8,
+                                              vertex_labelsize = label_sizes_repub,
+                                              edge_color = 'firebrick') + 
+      # additional theme tweaks
+      labs(title = 'Republican: duty') +
+      theme(plot.title = element_text(face = 'bold'))
+## plot
+grid.arrange(p_demo, p_repub, ncol = 2)
+```
+
+
+### Serialize with a loop
+```{r fig.height=20, fig.width=10, fig.align='center'}
 ## feature co-occurence matrix
-container <- list()
-for(m in c('Democratic', 'Republican')){
-  for(i in query){
-  toks_sel <- tokens_subset(toks, Party == m)
-  toks_sel <- tokens_select(toks_sel, pattern=i, selection = "keep", window = 10, 
-                            padding = FALSE, verbose = TRUE)
-  dfcmat <- fcm(toks_sel, context = 'window', window = 5, 
-                count = 'weighted', tri = FALSE)
-  feat <- names(topfeatures(dfcmat, 51))
-  dfcmat_sel <- fcm_select(dfcmat, pattern = feat, selection = "keep")
-  ## plot 
-  label_sizes <- rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))*0.8
-  label_sizes[i] <- 0.1
-  set.seed(123)
-  p <- quanteda.textplots::textplot_network(dfcmat_sel, 
-                                            min_freq = 0.5,
-                                            edge_alpha = 0.2,
-                                            vertex_size = rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))/8,
-                                            vertex_labelsize = label_sizes,
-                                            edge_color = ifelse(m=='Republican', 'firebrick', 'dodgerblue'))
-  container[[paste0(m, ': ', i)]] <- p + 
-    labs(title = paste0(m, ': ', i)) +
-    theme(
-      plot.title = element_text(face = 'bold')
-    )
+container <- list() # plot-container
+for(m in c('Democratic', 'Republican')){ # loop over party
+  for(i in query){ # loop over keywords
+    ## subset data by the party-affiliation in <m>
+    toks_sel <- tokens_subset(toks, Party == m)
+    ## select tokens within +/- 10 words around the keyword in <i>
+    toks_sel <- tokens_select(toks_sel, pattern = i, selection = "keep", window = 10, 
+                              padding = FALSE, verbose = TRUE)
+    ## create feature co-occurence matrix (fcm) with weights within the window
+    ## the more distance between the words, the less weight the co-occurence gets
+    dfcmat <- fcm(toks_sel, context = 'window', window = 10, 
+                  count = 'weighted', tri = FALSE)
+    ## extract the names of the 50 top co-occurences in the embedding for the term in <i>
+    feat <- names(topfeatures(dfcmat, 51))
+    ## subset the fcm, by selecting those top 50 terms
+    dfcmat_sel <- fcm_select(dfcmat, pattern = feat, selection = "keep")
+    ## create plot
+    # compute varying word-label sizes for each term based on its frequency
+    label_sizes <- rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))*0.8
+    # override the size for the term in <i> (cannibalizes the whole space of the plot)
+    label_sizes[i] <- 0.1
+    set.seed(123) # set seed for repoducibility
+    p <- quanteda.textplots::textplot_network(dfcmat_sel, 
+                                              min_freq = 0.5,
+                                              edge_alpha = 0.2,
+                                              vertex_size = rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))/8,
+                                              vertex_labelsize = label_sizes,
+                                              edge_color = ifelse(m=='Republican', 'firebrick', 'dodgerblue')) + 
+      # additional theme tweaks
+      labs(title = paste0(m, ': ', i)) +
+      theme(plot.title = element_text(face = 'bold'))
+    ## populate the container
+    container[[paste0(m, ': ', i)]] <- p 
   }
 }
+## plot panel
 names(container)
 grid.arrange(container[[1]], container[[7]], 
              container[[2]], container[[8]], 
