@@ -4,6 +4,7 @@ library(stringi)
 library(tidyverse)
 library(quanteda)
 library(readtext)
+library(xml2)
 
 rm(list = ls())
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -15,13 +16,18 @@ hrefs <- paste0('https://plato.stanford.edu/', hrefs)
 
 for(i in hrefs){
   #i = hrefs[2]
+  i = "https://plato.stanford.edu/entries/logic-algebraic-propositional/"
   cat(i)
   title <- stri_extract(i, regex = '(?<=entries\\/).*[^/]')
   page <- read_html(i)
   preamble <- page %>% html_node('div#preamble') %>% html_text()
   bibliography <- page %>% html_nodes('div#bibliography ul li') %>% sapply(., html_text)
   #ody.titles <- page %>% html_nodes('div#main-text h2, div#main-text h3') %>% html_text()
-  body.text <- page %>% html_nodes('div#main-text p') %>% html_text() %>% paste0(., collapse = ' ')
+  #body <- page %>% html_nodes('div#main-text')
+  #mathjax <- body %>% html_nodes("//contains(@id,'MathJax')")
+  #xml_remove(mathjax)
+  body.text <- body %>% html_nodes('div#main-text p') %>%  html_text() %>% paste0(., collapse = ' ')
+  body.text %>% html_nodes('span.MathJax')
   body.text <- paste0(preamble, body.text, collapse = ' ')
   pubinfo <- page %>% html_nodes('div#pubinfo') %>%  html_text()
   pubinfo <- stri_extract_all(pubinfo, regex = '\\b[A-z]{3}\\b\\s[0-9]+\\,\\s[0-9]+') %>% unlist

@@ -1,2 +1,10 @@
 name: "coliphi"
-href: index.html
+navbar:
+  title: "Practice Sessions"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Session 1"
+      href: practice_lessons/lesson_1/src/session1.html
+    #- text: "Session 2"
+    #  href: s2.html
