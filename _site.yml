@@ -6,6 +6,6 @@ navbar:
     - text: "Home"
       href: index.html
     - text: "Session 1"
-      href: practice_lessons/lesson_1/src/session1.html
-    #- text: "Session 2"
-    #  href: s2.html
+      href: practice_lessons/lesson_1/src/session_1v1.html
+    - text: "Session 2"
+      href: practice_lessons/lesson_2/src/session_2v1.html

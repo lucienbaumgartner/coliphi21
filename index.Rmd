@@ -1,9 +1,14 @@
 ---
-title: "Hi!"
-include: ["./practice_lessons/lesson_1/src/session_1v1.Rmd"]
+title: "CoLiPhi21"
+include: ["./practice_lessons/lesson_1/src/session_1v1.Rmd", "./practice_lessons/lesson_2/src/session_2v1.Rmd"]
 output_dir: "docs"
 output: html_document
-
 ---
 
-Bitchin!
+## Corpus Linhuistics and Philosophy Workshop 21
+
+Hi! This is the online repository for CoLiPhi21 Practice Sessions:
+
+- [Session 1](./practice_lessons/lesson_1/src/session_1v1.html)
+
+- [Session 2](./practice_lessons/lesson_2/src/session_2v1.Rmd)
