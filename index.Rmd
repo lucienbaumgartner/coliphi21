@@ -1,0 +1,9 @@
+---
+title: "Hi!"
+include: ["./practice_lessons/lesson_1/src/session_1v1.Rmd"]
+output_dir: "docs"
+output: html_document
+
+---
+
+Bitchin!

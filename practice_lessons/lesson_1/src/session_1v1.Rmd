@@ -1,0 +1,256 @@
+---
+title: "Practice Lesson 1:\nBasics of Corpus Analytics"
+author: "Lucien Baumgartner & Kevin Reuter"
+date: "5/27/2021"
+output: 
+  epuRate::epurate:
+      toc: TRUE
+      number_sections: FALSE
+      code_folding: "show"
+---
+
+```{r setup, include=FALSE}
+options(width = 999)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+#library(devtools)
+#install_github("holtzy/epuRate")
+library(epuRate)
+library(rmarkdown)
+```
+
+<link rel="stylesheet" href="styles.css">
+
+## Packages
+```{r message=FALSE}
+## load required libraries
+library(tidyverse)
+library(quanteda)
+library(lexicon)
+library(reshape2)
+library(stringi)
+library(quanteda.textplots)
+library(gridExtra)
+```
+
+## Clean workspace and set working directory
+```{r}
+## clean workspace
+rm(list=ls())
+```
+```{r eval=FALSE}
+## set working directory (WD)
+path <- '~/coliphi21/practice_lessons/lesson_1/src/'
+setwd(path)
+```
+```{r}
+## check that WD is set correctly
+getwd()
+```
+
+## Import data
+
+For this tutorial you can either work with your own data, or the pre-built copora provided in the `/input`-folder for the first practice session. The `quanteda`-package also contains pre-built corpora you can use. For this session, I will use the `quanteda`-corpus `data_corpus_inaugural` containing the inaugural addresses of US presidents since 1789. If you work with your own data or our other pre-built corpora, this vignette might be helpful.
+
+```{r}
+df <- data_corpus_inaugural
+```
+
+## Inspect data
+```{r}
+## how does the corpus object look like?
+df
+## summary statistics
+summary(df) %>% head
+## what object class is the object?
+class(df)
+## how much space does it use?
+object.size(df)
+## what does data structure look like?
+str(df)
+```
+
+## Interacting with the data
+### Document variables
+```{r}
+## the document-level variables
+docvars(df) %>% head
+```
+
+### Selecting documents
+```{r}
+## text data: how can we look at Biden's 2021 speech?
+txt <- as.character(df)
+names(txt)
+biden <- txt[grepl('Biden', names(txt))]
+cat(biden)
+# select Washington's 1789 speech to compare
+cat(txt['1789-Washington'])
+```
+
+### Word tokens and the document-term matrix
+```{r}
+## word tokenization
+?tokens
+toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F)
+toks
+## document-term matrix
+dfx <- dfm(toks)
+dfx
+```
+
+### Top features
+```{r}
+## top 10 features for every document
+topfeatures(dfx, n = 10, groups = docnames(dfx))
+## ugh, not very informative...
+```
+
+```{r}
+## let's remove stopwords before creating a document-term matrix
+## this is done during tokenization
+stopwords('en')
+sel_toks <- tokens_select(toks, pattern = stopwords("en"), selection = "remove")
+dfx <- dfm(sel_toks)
+```
+
+```{r}
+# again: 10 features for every document, now without stopwords
+topfeatures(dfx, n = 10, groups = docnames(dfx))
+# we can also compute topfeatures by any docvar
+docvars(dfx)
+topfeatures(dfx, n = 10, groups = Party)
+```
+
+## Level of analysis: sentence
+Sometimes we want to analyze certain indicators on sentence-level. To show how to go about doing so, we will compute the per-sentence sentiment in Biden's 2021 speech.
+
+### Reshape, Subset and Prepare Documents
+```{r}
+## first step: extract Biden's speech from the corpus
+biden <- corpus_subset(df, President == 'Biden')
+## 2nd step: reshape corpus from full texts to sentences
+sentences <- corpus_reshape(biden, to = 'sentences')
+sentences
+## 3rd step: within-sentence word tokenization
+# tokenize
+sentence_toks <- tokens(sentences, what = 'word',  remove_punct = T)
+# make lower case
+sentence_toks <- tokens_tolower(sentence_toks)
+# remove stopwords
+sentence_toks <- tokens_select(sentence_toks, pattern = stopwords("en"), selection = "remove")
+```
+
+### Sentiment annotation
+```{r}
+## select a sentiment dictionary
+## we use the Proksch et al. (2015 dictionary native to quanteda)
+data_dictionary_LSD2015
+## apply dictionary to the Biden's speech
+toks_lsd <- tokens_lookup(sentence_toks, dictionary = data_dictionary_LSD2015[1:2])
+dfm_lsd <- dfm(toks_lsd)
+## compute percentage of positive words per sentence
+## over the course of the speech
+# melt dfm to long table
+df_lsd <- convert(dfm_lsd, to = "data.frame")
+df_lsd
+df_lsd <- melt(df_lsd, id.vars = 'doc_id', variable.name = 'sentiment', value.name = 'n')
+head(df_lsd)
+# group by sentence (doc_id) and compute percentages
+df_lsd <- df_lsd %>% 
+  group_by(doc_id) %>% 
+  mutate(perc = n/sum(n))
+head(df_lsd)
+# give every sentence a numeric value corresponding to doc ID
+df_lsd <- df_lsd %>% 
+  ungroup %>% 
+  mutate(num_id = as.numeric(stri_extract(doc_id, regex = '(?<=\\.)[0-9]+')))
+```
+
+### Visualization 
+```{r fig.align='center'}
+## plot results
+ggplot(data = df_lsd, aes(x = num_id, y = perc, colour = sentiment, group = sentiment)) +
+  geom_smooth() +
+  #geom_point(alpha = 0.5) +
+  theme_classic() +
+  theme(plot.title = element_text(face = 'bold')) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0.01, 0.01), labels = scales::percent) +
+  labs(
+    title = "Biden's 2021 speech: sentiment per sentence, smoothed",
+    x = 'Sentence Number Within Speech',
+    y = 'Frequency'
+  )
+## inspect sentence-tokens vectors 55-65
+sentence_toks[55:65]
+## uh.. this doesn't look like it's meant negatively.
+## let's double check by reading the untokenized sentences
+sentences[55:65]
+## as expected, Biden is mentioning ISSUES, but in a combative way
+```
+
+## Level of analysis: phrasal windows
+In certain situations, we would like to analyze the embedding of certain words. For this, we need to adjust the level of analysis accordingly.
+```{r fig.height=20, fig.width=10, fig.align='center'}
+## tokenization
+toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F)
+toks <- tokens_replace(toks,
+                       pattern = '\\bUS\\b',
+                       replacement = 'USA')
+toks <- tokens_tolower(toks)
+## lemmatizing
+toks <- tokens_replace(toks, 
+                       pattern = lexicon::hash_lemmas$token, 
+                       replacement = lexicon::hash_lemmas$lemma)
+## remove stopwords stopwords
+# custom stopwords
+cstmwrds <- c('upon', 'can', 'us', 'let', 'may', 'us', 'make',
+              'must', 'many', 'shall', 'without', 'among',
+              'much', 'every', 'ever', 'know', 'new', 'never',
+              'year', 'find', 'see')
+# remove them all
+toks <- tokens_select(toks,  pattern = c(stopwords("en"), cstmwrds), selection = "remove")
+## inspect topfeatures to select interesting words
+dfx <- dfm(toks)
+topfeatures(dfx, 50)
+## defining interesting words
+query <- c('progress', 'spirit', 'world', 'nation', 'duty', 'war')
+## feature co-occurence matrix
+container <- list()
+for(m in c('Democratic', 'Republican')){
+  for(i in query){
+  toks_sel <- tokens_subset(toks, Party == m)
+  toks_sel <- tokens_select(toks_sel, pattern=i, selection = "keep", window = 10, 
+                            padding = FALSE, verbose = TRUE)
+  dfcmat <- fcm(toks_sel, context = 'window', window = 5, 
+                count = 'weighted', tri = FALSE)
+  feat <- names(topfeatures(dfcmat, 51))
+  dfcmat_sel <- fcm_select(dfcmat, pattern = feat, selection = "keep")
+  ## plot 
+  label_sizes <- rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))*0.8
+  label_sizes[i] <- 0.1
+  set.seed(123)
+  p <- quanteda.textplots::textplot_network(dfcmat_sel, 
+                                            min_freq = 0.5,
+                                            edge_alpha = 0.2,
+                                            vertex_size = rowSums(dfcmat_sel)/min(rowSums(dfcmat_sel))/8,
+                                            vertex_labelsize = label_sizes,
+                                            edge_color = ifelse(m=='Republican', 'firebrick', 'dodgerblue'))
+  container[[paste0(m, ': ', i)]] <- p + 
+    labs(title = paste0(m, ': ', i)) +
+    theme(
+      plot.title = element_text(face = 'bold')
+    )
+  }
+}
+names(container)
+grid.arrange(container[[1]], container[[7]], 
+             container[[2]], container[[8]], 
+             container[[3]], container[[9]],
+             container[[4]], container[[10]], 
+             container[[5]], container[[11]], 
+             container[[6]], container[[12]],
+             ncol = 2)
+```
+
+

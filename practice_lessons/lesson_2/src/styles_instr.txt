@@ -1,0 +1,4 @@
+toc: true
+toc_float: true
+theme: lumen
+css: "styles.css"

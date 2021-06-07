@@ -1,0 +1,114 @@
+---
+title: "Practice Lesson 1:\nBasics of Corpus Analytics"
+author: "Lucien Baumgartner & Kevin Reuter"
+date: "5/27/2021"
+output: 
+  epuRate::epurate:
+      toc: TRUE
+      number_sections: FALSE
+      code_folding: "show"
+---
+
+```{r setup, include=FALSE}
+options(width = 999)
+knitr::opts_chunk$set(echo = TRUE)
+#library(devtools)
+#install_github("holtzy/epuRate")
+library(epuRate)
+library(rmarkdown)
+```
+
+<link rel="stylesheet" href="styles.css">
+
+## Packages
+```{r message=FALSE}
+## load required libraries
+library(tidyverse)
+library(quanteda)
+```
+
+## Clean workspace and set working directory
+```{r}
+## clean workspace
+rm(list=ls())
+```
+```{r eval=FALSE}
+## set working directory (WD)
+path <- '~/coliphi21/practice_lessons/lesson_1/src/'
+setwd(path)
+```
+```{r}
+## check that WD is set correctly
+getwd()
+```
+
+## Import data
+
+For this tutorial you can either work with your own data, or the pre-built copora provided in the `/input`-folder for the first practice session. The `quanteda`-package also contains pre-built corpora you can use. For this session, I will use the `quanteda`-corpus `data_corpus_inaugural` containing the inaugural addresses of US presidents since 1789. If you work with your own data or our other pre-built corpora, this vignette might be helpful.
+
+```{r}
+df <- data_corpus_inaugural
+```
+
+## Inspect data
+```{r}
+## how does the corpus object look like?
+df
+## summary statistics
+summary(df) %>% head
+## what object class is the object?
+class(df)
+## how much space does it use?
+object.size(df)
+## what does data structure look like?
+str(df)
+```
+
+## Interacting with the data
+### Document variables
+```{r}
+## the document-level variables
+docvars(df) %>% head
+```
+
+### Selecting documents
+```{r}
+## text data: how can we look at Biden's 2021 speech?
+txt <- as.character(df)
+names(txt)
+biden <- txt[grepl('Biden', names(txt))]
+cat(biden)
+# select Washington's 1789 speech to compare
+cat(txt['1789-Washington'])
+```
+
+### Document-term matrix
+```{r}
+# document-term matrix
+?tokens
+toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F)
+dfx <- dfm(toks)
+dfx
+```
+
+### Topfeatures
+```{r}
+# top 10 features for every document
+topfeatures(dfx, n = 10, groups = docnames(dfx))
+# ugh, not very informative...
+```
+
+```{r}
+# let's remove stopwords before creating a document-term matrix
+stopwords('en')
+sel_toks <- tokens_select(toks, pattern = stopwords("en"), selection = "remove")
+dfx <- dfm(sel_toks)
+```
+
+```{r}
+# again: 10 features for every document, now without stopwords
+topfeatures(dfx, n = 10, groups = docnames(dfx))
+# we can also compute topfeatures by any docvar
+docvars(dfx)
+topfeatures(dfx, n = 10, groups = Party)
+```
