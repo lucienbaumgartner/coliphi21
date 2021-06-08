@@ -1,0 +1,226 @@
+# install.packages("RCurl", dependencies=TRUE)
+# install.packages("stringr", dependencies=TRUE)
+# install.packages("tm", dependencies=TRUE)
+# install.packages("textstem", dependencies=TRUE)
+# install.packages("textstem", dependencies=TRUE)
+# install.packages("qdapDictionaries", dependencies=TRUE)
+# install.packages("lsa", dependencies=TRUE)
+# install.packages("LSAfun", dependencies=TRUE)
+# install.packages("wordcloud", dependencies=TRUE)
+# install.packages("rword2vec", dependencies=TRUE)
+
+library(RCurl)
+library(stringr)
+library(tm)
+library(textstem)
+library(qdapDictionaries)
+library(lsa)
+library(LSAfun)
+library(wordcloud)
+library(rword2vec)
+
+
+##########################
+# SCRAPE SEP USING RCurl #
+##########################
+
+# Get Table of Contents
+url <- "https://plato.stanford.edu/contents.html" 
+toc <- getURL(url)
+
+# Pull out folder name for each entry
+links <- str_extract_all(toc, "<a href=\"entries/[^/]+/\">")
+
+# For each item in list, cut to entry name
+entries = lapply( links, function(x)str_replace_all( x, "<a href=\"entries/" , "" ) )
+entries = lapply( entries, function(x)str_replace_all( x, "/\">" , "" ) )
+
+# Alphabetize and Remove Duplicates
+entries <- unlist(entries)
+entries = sort(entries)
+entries <- unique( entries )
+
+# Let's just look at entries dealing with causation
+c_entries <- entries[207:215]	# causal-models to causation-probabilistic
+
+Text <- ""
+
+# Repeat script for each entry...
+for (x in c_entries) {
+
+	# Use RCurl to get page...
+	url <- paste("https://plato.stanford.edu/entries/", x, "/", sep="") 
+	file <- getURL(url)
+
+	# Cut to relevant bits: Want <div id="preamble"> to <div id="bibliography">, removing <!--Entry Contents--> to <!--Entry Contents-->
+	# split on <div id="preamble"> and toss extra
+	list <- str_split( file, "<div id=\"preamble\">" ) 
+	vect <- unlist(list)
+	text <- vect[2]
+
+	# split on <div id="bibliography"> and toss extra
+	list <- str_split( text, "<div id=\"bibliography\">" ) 
+	vect <- unlist(list)
+	text <- vect[1]
+
+	# split on <!--Entry Contents--> and toss extra
+	list <- str_split( text, "<!--Entry Contents-->" ) 
+	vect <- unlist(list)
+	text <- paste( vect[1], vect[3] )
+
+	# Include Paragraph Breaks for Carving Into Multiple Documents 
+	text <- str_replace_all(text, "<[Pp]>", " @@@@@ ")
+
+	# Clean: Separate Hyphenated, Remove Breaks, Remove Tags, Remove Special Characters, Lowercase, Remove Possessives, Trim
+	text <- str_replace_all(text, "-", " ")
+	text <- str_replace_all(text, "\\a", " ")
+	text <- str_replace_all(text, "\\n", " ")
+	text <- str_replace_all(text, "\\t", " ")
+	text <- str_replace_all(text, "\\r", " ")
+	text <- str_replace_all(text, "\\s", " ")
+	text <- str_replace_all(text, "<[^>]*>", " ")
+	text <- str_replace_all(text, "&ldquo;", "\"")
+	text <- str_replace_all(text, "&rdquo;", "\"")
+	text <- str_replace_all(text, "&lsquo;", "\'")
+	text <- str_replace_all(text, "&rsquo;", "\'")
+	text <- str_replace_all(text, "&mdash;", " -- ")
+	text <- str_replace_all(text, "&hellip;", " ... ")
+	text <- str_replace_all(text, "&[^;]+;", " ")
+	text <- str_to_lower(text)
+	text <- str_replace_all(text, "\'s", "")
+	text <- str_trim(text)
+	
+	# Append...
+	Text <- paste(Text, text, sep="")
+
+}
+
+# Save the text to a file
+# write( Text, "C:/Users/jmsyt/Desktop/CoLiPhi 2021/Causal Attributions and Corpus Analysis/SEP_TEXT.txt" )
+
+
+# CREATE TOKEN FOR MULTIWORD PHRASES OF INTEREST
+Text <- str_replace_all(Text, "caused the", "caused_the")
+Text <- str_replace_all(Text, "responsible for the", "responsible_for_the")
+
+Documents <- str_split(Text, "@@@@@")
+Documents <- unlist(Documents)
+Documents <- Documents[2:length(Documents)]
+Documents <- str_trim(Documents)
+
+
+
+##################################
+# Put into Corpus using tm       #
+# Preprocess                     #
+# Lemmatize using textstem       #
+##################################
+
+Corpus <- Corpus( VectorSource(Documents) )
+
+# Preprocess: Remove Stopwords, Numbers, Punctuation...
+
+Corpus <- tm_map(Corpus, removeWords, stopwords("english") )
+# stopwords("english")
+Corpus <- tm_map(Corpus, removeNumbers )
+Corpus <- tm_map(Corpus, removePunctuation, preserve_intra_word_contractions=TRUE )
+# Fix tokens after punctuation was removed
+Corpus$content <- str_replace_all(Corpus$content, "causedthe", "caused_the")
+Corpus$content <- str_replace_all(Corpus$content, "responsibleforthe", "responsible_for_the")
+
+# Preprocess: Lemmatize
+Corpus <- tm_map(Corpus, content_transformer(lemmatize_words))
+Corpus <- tm_map(Corpus, stripWhitespace )
+
+# Preprocess: Remove "non-words"
+TDM    <- TermDocumentMatrix(Corpus)
+TOKENS <- findFreqTerms(TDM, 1)
+# Check tokens against dictionary, excluding "caused_the" and "responsible_for_the"
+REMOVE <- setdiff(TOKENS, GradyAugmented)
+REMOVE <- REMOVE[ REMOVE != "responsible_for_the" ]
+REMOVE <- REMOVE[ REMOVE != "caused_the" ]
+# Remove from Corpus
+Corpus <- tm_map(Corpus, content_transformer(removeWords), REMOVE)
+
+# Corpus$content
+
+
+
+#####
+# Create Vector Space
+######
+
+DTM <- DocumentTermMatrix(Corpus)
+inspect(DTM)
+
+# DTM <- removeSparseTerms(DTM, 0.9955)
+# inspect(DTM)
+
+DTM_M <- as.matrix(DTM)
+sum(DTM_M[,"cause"])
+sum(DTM_M[,"responsible"])
+sum(DTM_M[,"caused_the"])
+sum(DTM_M[,"responsible_for_the"])
+
+
+# Weight
+########
+DTM_W <- weightTfIdf(DTM, normalize=FALSE)
+
+
+# CREATE SPACE
+##############
+SPACE = lsa(DTM_W)
+MAT <- SPACE$dk
+
+
+# ANALYZE
+#########
+
+multicos("cause", "responsible blame", tvectors=MAT)	
+multicos("blame", "responsible", tvectors=MAT)
+
+neighbors("cause", 50, tvectors=MAT, breakdown=FALSE)
+neighbors("responsible", 50, tvectors=MAT, breakdown=FALSE)
+neighbors("blame", 50, tvectors=MAT, breakdown=FALSE)
+
+multicos("caused_the", "responsible_for_the", tvectors=MAT)
+neighbors("caused_the", 50, tvectors=MAT, breakdown=FALSE)
+neighbors("responsible_for_the", 50, tvectors=MAT, breakdown=FALSE)
+
+
+# Most Frequent Terms:
+sorted <- sort( colSums(DTM_M), decreasing=TRUE )
+d <- data.frame(word = names(sorted),freq=sorted)
+head(d, 100)
+
+
+# Wordcloud
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=300, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+
+
+
+# rword2vec
+###########
+# 
+# write( Corpus$content, "C:/Users/jmsyt/Desktop/word2vec.txt" )
+# 
+# Model=word2vec(train_file = "C:/Users/jmsyt/Desktop/word2vec.txt",output_file = "w2v.bin",binary=1)
+# 
+# distance(file_name="w2v.bin", search_word="cause",num = 20)
+# distance(file_name="w2v.bin", search_word="responsible",num = 20)
+#
+#####
+
+
+
+
+
+
+
+
+

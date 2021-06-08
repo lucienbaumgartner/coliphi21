@@ -1,0 +1,123 @@
+---
+title: "Nietzsche corpus analysis"
+author: "Mark Alfano"
+date: "5/26/2021"
+output:
+  html_document:
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#load required packages
+
+```{r}
+require(readtext)
+require(LIWCalike)
+require(quanteda)
+require(dplyr)
+require(tidytext)
+```
+
+#Read into R and transform into a corpus
+```{r}
+nietzsche <- readtext("~/Dropbox/nietzsche/*")
+nietzsche
+nietzsche_corpus <- corpus(nietzsche)
+```
+
+#Summarize the full corpus. This reveals that there are, for example, 1026 sentences in The Antichrist, 1856 sentences in Beyond Good and Evil, and 802 sentences in Schopenhauer as Editor.
+
+```{r}
+summary(nietzsche_corpus)
+```
+
+#Tokenize the corpus, remove stopwords and punctuation, and get a list of the most common words:
+
+```{r}
+dfmat_nietzsche <- dfm(nietzsche_corpus, stem = TRUE, remove = stopwords("de"), remove_punct = TRUE)
+dfmat_nietzsche
+topfeatures(dfmat_nietzsche, 20)
+```
+
+#Generate a word cloud
+
+```{r}
+set.seed(100)
+textplot_wordcloud(dfmat_nietzsche, min_count = 6, random_order = FALSE,
+                   rotation = .25,
+                   color = RColorBrewer::brewer.pal(8, "Dark2"))
+```
+
+#Run topic models using LDA
+
+```{r}
+set.seed(100)
+if (require(topicmodels)) {
+    my_lda_fit <- LDA(convert(dfmat_nietzsche, to = "topicmodels"), k = 8)
+    get_terms(my_lda_fit, 10)
+}
+```
+
+#To go beyond analyzing the whole corpus as a mass, we can also get the top features of each book
+```{r}
+topfeatures(dfmat_nietzsche, 10, decreasing = TRUE, groups = docnames(dfmat_nietzsche))
+```
+
+#We can use hierarchical clustering to establish the pairwise similarity of all books, then plot the results as a dendrogram.
+```{r}
+tstat_dist <- textstat_dist(dfm_weight(dfmat_nietzsche, scheme = "prop"))
+nietzsche_cluster <- hclust(as.dist(tstat_dist))
+nietzsche_cluster$labels <- docnames(dfmat_nietzsche)
+plot(nietzsche_cluster, xlab = "", sub = "",
+     main = "Euclidean Distance on Normalized Token Frequency")
+```
+
+#To get a better sense of which terms are distinctively associated with which books, calculate term frequency-inverse document frequency (tf-idf). 
+```{r}
+tfidf_nietzsche <- dfm_tfidf(dfmat_nietzsche)
+transposetfidf_nietzsche <- t(tfidf_nietzsche)
+tfidf.df <- as.data.frame(transposetfidf_nietzsche)
+a <- tfidf.df[order(tfidf.df$A.txt, decreasing = TRUE),]
+head(a)
+bge <- tfidf.df[order(tfidf.df$BGE.txt, decreasing = TRUE),]
+head(bge)
+bt <- tfidf.df[order(tfidf.df$BT.txt, decreasing = TRUE),]
+head(bt)
+cw <- tfidf.df[order(tfidf.df$CW.txt, decreasing = TRUE),]
+head(cw)
+d <- tfidf.df[order(tfidf.df$D.txt, decreasing = TRUE),]
+head(d)
+ds <- tfidf.df[order(tfidf.df$DS.txt, decreasing = TRUE),]
+head(ds)
+eh <- tfidf.df[order(tfidf.df$EH.txt, decreasing = TRUE),]
+head(eh)
+gm <- tfidf.df[order(tfidf.df$GM.txt, decreasing = TRUE),]
+head(gm)
+gs <- tfidf.df[order(tfidf.df$GS.txt, decreasing = TRUE),]
+head(gs)
+hh1 <- tfidf.df[order(tfidf.df$HH1.txt, decreasing = TRUE),]
+head(hh1)
+hh2 <- tfidf.df[order(tfidf.df$HH2.txt, decreasing = TRUE),]
+head(hh2)
+hl <- tfidf.df[order(tfidf.df$HL.txt, decreasing = TRUE),]
+head(hl)
+rwb <- tfidf.df[order(tfidf.df$RWB.txt, decreasing = TRUE),]
+head(rwb)
+se <- tfidf.df[order(tfidf.df$SE.txt, decreasing = TRUE),]
+head(se)
+ti <- tfidf.df[order(tfidf.df$TI.txt, decreasing = TRUE),]
+head(ti)
+z1 <- tfidf.df[order(tfidf.df$Z1.txt, decreasing = TRUE),]
+head(z1)
+z2 <- tfidf.df[order(tfidf.df$Z2.txt, decreasing = TRUE),]
+head(z2)
+z3 <- tfidf.df[order(tfidf.df$Z3.txt, decreasing = TRUE),]
+head(z3)
+z4 <- tfidf.df[order(tfidf.df$Z4.txt, decreasing = TRUE),]
+head(z4)
+```

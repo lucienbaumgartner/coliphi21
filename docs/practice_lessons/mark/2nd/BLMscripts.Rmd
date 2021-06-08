@@ -1,0 +1,190 @@
+---
+title: "BLM"
+author: "Mark Alfano"
+date: "5/26/2021"
+output:
+  html_document:
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#load required packages
+
+```{r}
+require(readtext)
+require(LIWCalike)
+require(quanteda)
+require(ggplot2)
+require(quanteda.textplots)
+```
+
+#read in daily corpus
+```{r}
+blm_daily <- readtext("~/Dropbox/blm/communitydaily/*")
+blm_daily_corpus <- corpus(blm_daily)
+```
+
+#load standard liwc dictionary and run on daily corpus
+```{r}
+liwcdic <- dictionary(file = "liwcdict.dic")
+output1 <- liwcalike(blm_daily_corpus, liwcdic)
+write.csv(output1, file = "blm_daily_liwc.csv")
+```
+
+#load moral foundations dictionary and run on daily corpus
+```{r}
+mftdic <- dictionary(file = "mft.dic")
+output2 <- liwcalike(blm_daily_corpus, mftdic)
+write.csv(output2, file = "blm_daily_mft.csv")
+```
+
+```{r}
+#load morality-as-cooperation dictionary and run on daily corpus
+macvirtuedic <- dictionary(file = "macdvirtue.dic")
+output3 <- liwcalike(blm_daily_corpus, macvirtuedic)
+write.csv(output3, file = "blm_daily_macvirtue.csv")
+```
+
+#combine these outputs in excel and save as blm_daily_community.csv
+#Read the liwcalike output back in
+
+```{r}
+data <- read.csv("blm_daily_community.csv")
+```
+
+#plot daily time-course, broken down by community, of word counts
+```{r}
+ggplot(data, aes(day, WC, colour = community)) + scale_color_manual(values=c("#4daf4a", "#377eb8", "#984ea3", "#e41a1c")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "word count") + geom_smooth(se = TRUE, span = .09) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal")) + scale_y_continuous(labels=function(n){format(n, scientific = FALSE)})
+```
+
+#time series for some relevant liwc dictionaries and custom dictionaries
+```{r}
+ggplot(data, aes(day, Posemo, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + ylim(c(0, 8)) + labs(x = "day", y = "positive emotion") + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, Anx, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "anxiety") + ylim(c(0, 1)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, Anger, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "anger") + ylim(c(0, 5)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, Sad, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "sadness") + ylim(c(0, 1)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, I, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "first-person singular") + ylim(c(0, 5)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, We, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "first-person plural") + ylim(c(0, 3)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, You, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "second-person") + ylim(c(0, 4.5)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, Percept, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "perception") + ylim(c(0, 10)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+
+ggplot(data, aes(day, Swear, colour = community)) + scale_color_manual(values=c("green", "blue", "yellow", "red")) + geom_point() + geom_vline(xintercept = 233) + labs(x = "day", y = "swears") + ylim(c(0, 3)) + geom_smooth(se = TRUE, method = loess) + theme(legend.position = c(.3, .97), legend.background = element_rect(fill = "transparent"), legend.title = element_blank()) + guides(color = guide_legend(direction = "horizontal"))
+```
+
+#read in hashtag corpus, broken down by community. Transform into a corpus, then into a document feature matrix. 
+```{r}
+hashtagscom <- readtext("~/Dropbox/blm/hashtagsbycommunity/*")
+hashtagscom_corpus <- corpus(hashtagscom)
+dfmat_hashtagscom <- dfm(hashtagscom_corpus, remove_punct = TRUE)
+```
+
+#set random seed, then plot a comparison wordcloud of the four communities
+```{r}
+set.seed(100)
+textplot_wordcloud(dfmat_hashtagscom, min_size = 1, max_size = 6, min_count = 6, comparison = TRUE, labelsize = .6, labeloffset = 0, random_order = FALSE, rotation = 0.25,color = RColorBrewer::brewer.pal(8, "Dark2"))
+```
+
+#plot wordclouds for each of the four main communities as well
+```{r}
+hashtagscom0 <- readtext("~/Dropbox/blm/hashtagsbycommunity/Activists.txt")
+hashtagscom0_corpus <- corpus(hashtagscom0)
+dfmat_hashtagscom0 <- dfm(hashtagscom0_corpus, remove_punct = TRUE)
+textplot_wordcloud(dfmat_hashtagscom0, min_count = 6, min_size = 1, random_order = FALSE, rotation = 0.25, color = RColorBrewer::brewer.pal(8, "Dark2"))
+
+hashtagscom1 <- readtext("~/Dropbox/blm/hashtagsbycommunity/Democrats.txt")
+hashtagscom1_corpus <- corpus(hashtagscom1)
+dfmat_hashtagscom1 <- dfm(hashtagscom1_corpus, remove_punct = TRUE)
+textplot_wordcloud(dfmat_hashtagscom1, min_count = 6, min_size = 1, random_order = FALSE, rotation = 0.25, color = RColorBrewer::brewer.pal(8, "Dark2"))
+
+hashtagscom2 <- readtext("~/Dropbox/blm/hashtagsbycommunity/MAGA.txt")
+hashtagscom2_corpus <- corpus(hashtagscom2)
+dfmat_hashtagscom2 <- dfm(hashtagscom2_corpus, remove_punct = TRUE)
+textplot_wordcloud(dfmat_hashtagscom2, min_count = 6, min_size = 1, random_order = FALSE, rotation = 0.25, color = RColorBrewer::brewer.pal(8, "Dark2"))
+
+hashtagscom3 <- readtext("~/Dropbox/blm/hashtagsbycommunity/K-Pop.txt")
+hashtagscom3_corpus <- corpus(hashtagscom3)
+dfmat_hashtagscom3 <- dfm(hashtagscom3_corpus, remove_punct = TRUE)
+textplot_wordcloud(dfmat_hashtagscom3, min_count = 6, min_size = 1, random_order = FALSE, rotation = 0.25, color = RColorBrewer::brewer.pal(8, "Dark2"))
+```
+
+
+#Read in hashtag adjacency matrix. Break into four objects based on community membership.
+```{r}
+data0 <- read.csv("hashemo-EXPERIMENTAL-COMM0-adjmatrix-top50.csv")
+data1 <- read.csv("hashemo-EXPERIMENTAL-COMM1-adjmatrix-top50.csv")
+data2 <- read.csv("hashemo-EXPERIMENTAL-COMM2-adjmatrix-top50.csv")
+data3 <- read.csv("hashemo-EXPERIMENTAL-COMM3-adjmatrix-top50.csv")
+```
+
+#Remove unwanted columns
+
+```{r}
+data0$TW_ID <- NULL
+data0$community <- NULL
+data0$subcommunity <- NULL
+data0$date <- NULL
+data1$TW_ID <- NULL
+data1$community <- NULL
+data1$subcommunity <- NULL
+data1$date <- NULL
+data2$TW_ID <- NULL
+data2$community <- NULL
+data2$subcommunity <- NULL
+data2$date <- NULL
+data3$TW_ID <- NULL
+data3$community <- NULL
+data3$subcommunity <- NULL
+data3$date <- NULL
+```
+
+#Re-order each data object so that columns are in decreasing order by sum. This puts the most common emoji first and lets you work only with them.
+
+```{r}
+data0 <- data0[, order(colSums(-data0))]
+data0 <- data0[,1:99]
+data1 <- data1[, order(colSums(-data1))]
+data1 <- data1[,1:100]
+data2 <- data2[, order(colSums(-data2))]
+data2 <- data2[,1:99]
+data3 <- data3[, order(colSums(-data3))]
+data3 <- data3[,1:100]
+```
+
+#transform each data object into a matrix. Construct the transpose of each matrix. Multiple each matrix by its transpose. Then write the output to a csv file for visualization in Gephi.
+
+```{r}
+M0 <- data.matrix(data0)
+T0 <- t(M0)
+adjacency0 <- (T0 %*% M0)
+write.csv(adjacency0, file="blmhashtagemojiadjacency0.csv")
+M1 <- data.matrix(data1)
+T1 <- t(M1)
+adjacency1 <- (T1 %*% M1)
+write.csv(adjacency1, file="blmhashtagemojiadjacency1.csv")
+M2 <- data.matrix(data2)
+T2 <- t(M2)
+adjacency2 <- (T2 %*% M2)
+write.csv(adjacency2, file="blmhashtagemojiadjacency2.csv")
+M3 <- data.matrix(data3)
+T3 <- t(M3)
+adjacency3 <- (T3 %*% M3)
+write.csv(adjacency3, file="blmhashtagemojiadjacency3.csv")
+```
+
+
+
+
+
+

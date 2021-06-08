@@ -1,0 +1,157 @@
+library(RCurl)
+library(stringr)
+library(tm)
+library(textstem)
+library(qdapDictionaries)
+library(lsa)
+library(LSAfun)
+library(wordcloud)
+library(rword2vec)
+
+
+##########################
+# SCRAPE SEP USING RCurl #
+##########################
+
+# Get Table of Contents
+url <- "https://plato.stanford.edu/contents.html" 
+toc <- getURL(url)
+
+# Pull out folder name for each entry
+links <- str_extract_all(toc, "<a href=\"entries/[^/]+/\">")
+
+# For each item in list, cut to entry name
+entries = lapply( links, function(x)str_replace_all( x, "<a href=\"entries/" , "" ) )
+entries = lapply( entries, function(x)str_replace_all( x, "/\">" , "" ) )
+
+# Alphabetize and Remove Duplicates
+entries <- unlist(entries)
+entries = sort(entries)
+entries <- unique( entries )
+
+# abduction, abelard, abhidharma, abilities, abner-burgos
+c_entries <- entries[2:6]	
+
+Text <- ""
+
+# Repeat script for each entry...
+for (x in c_entries) {
+
+	# Use RCurl to get page...
+	url <- paste("https://plato.stanford.edu/entries/", x, "/", sep="") 
+	file <- getURL(url)
+
+	# Cut to relevant bits: Want <div id="preamble"> to <div id="bibliography">, removing <!--Entry Contents--> to <!--Entry Contents-->
+	# split on <div id="preamble"> and toss extra
+	list <- str_split( file, "<div id=\"preamble\">" ) 
+	vect <- unlist(list)
+	text <- vect[2]
+
+	# split on <div id="bibliography"> and toss extra
+	list <- str_split( text, "<div id=\"bibliography\">" ) 
+	vect <- unlist(list)
+	text <- vect[1]
+
+	# split on <!--Entry Contents--> and toss extra
+	list <- str_split( text, "<!--Entry Contents-->" ) 
+	vect <- unlist(list)
+	text <- paste( vect[1], vect[3] )
+
+	# Include Paragraph Breaks for Carving Into Multiple Documents 
+	text <- str_replace_all(text, "<[Pp]>", " @@@@@ ")
+
+	# Clean: Separate Hyphenated, Remove Breaks, Remove Tags, Remove Special Characters, Lowercase, Remove Possessives, Trim
+	text <- str_replace_all(text, "-", " ")
+	text <- str_replace_all(text, "\\a", " ")
+	text <- str_replace_all(text, "\\n", " ")
+	text <- str_replace_all(text, "\\t", " ")
+	text <- str_replace_all(text, "\\r", " ")
+	text <- str_replace_all(text, "\\s", " ")
+	text <- str_replace_all(text, "<[^>]*>", " ")
+	text <- str_replace_all(text, "&ldquo;", "\"")
+	text <- str_replace_all(text, "&rdquo;", "\"")
+	text <- str_replace_all(text, "&lsquo;", "\'")
+	text <- str_replace_all(text, "&rsquo;", "\'")
+	text <- str_replace_all(text, "&mdash;", " -- ")
+	text <- str_replace_all(text, "&hellip;", " ... ")
+	text <- str_replace_all(text, "&[^;]+;", " ")
+	text <- str_to_lower(text)
+	text <- str_replace_all(text, "\'s", "")
+	text <- str_trim(text)
+	
+	# Append...
+	Text <- paste(Text, text, sep="")
+
+}
+
+Documents <- str_split(Text, "@@@@@")
+Documents <- unlist(Documents)
+Documents <- Documents[2:length(Documents)]
+Documents <- str_trim(Documents)
+
+
+
+##################################
+# Put into Corpus using tm       #
+# Preprocess                     #
+# Lemmatize using textstem       #
+##################################
+
+Corpus <- Corpus( VectorSource(Documents) )
+
+# Preprocess: Remove Stopwords, Numbers, Punctuation...
+
+Corpus <- tm_map(Corpus, removeWords, stopwords("english") )
+# stopwords("english")
+Corpus <- tm_map(Corpus, removeNumbers )
+Corpus <- tm_map(Corpus, removePunctuation, preserve_intra_word_contractions=TRUE )
+# Fix tokens after punctuation was removed
+Corpus$content <- str_replace_all(Corpus$content, "causedthe", "caused_the")
+Corpus$content <- str_replace_all(Corpus$content, "responsibleforthe", "responsible_for_the")
+
+# Preprocess: Lemmatize
+Corpus <- tm_map(Corpus, content_transformer(lemmatize_words))
+Corpus <- tm_map(Corpus, stripWhitespace )
+
+# Preprocess: Remove "non-words"
+TDM    <- TermDocumentMatrix(Corpus)
+TOKENS <- findFreqTerms(TDM, 1)
+# Check tokens against dictionary, excluding "caused_the" and "responsible_for_the"
+REMOVE <- setdiff(TOKENS, GradyAugmented)
+REMOVE <- REMOVE[ REMOVE != "responsible_for_the" ]
+REMOVE <- REMOVE[ REMOVE != "caused_the" ]
+# Remove from Corpus
+Corpus <- tm_map(Corpus, content_transformer(removeWords), REMOVE)
+
+
+
+#####
+# Create Vector Space
+######
+
+DTM <- DocumentTermMatrix(Corpus)
+inspect(DTM)
+
+DTM_M <- as.matrix(DTM)
+
+
+# ANALYZE
+#########
+
+# Most Frequent Terms:
+sorted <- sort( colSums(DTM_M), decreasing=TRUE )
+d <- data.frame(word = names(sorted),freq=sorted)
+head(d, 100)
+
+
+# Wordcloud
+set.seed(1234)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=300, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+
+
+
+
+
