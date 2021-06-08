@@ -1,6 +1,6 @@
 ---
 title: "CoLiPhi21"
-include: ["./practice_lessons/lesson_1/src/session_1v1.Rmd", "./practice_lessons/lesson_2/src/session_2v1.Rmd"]
+include: ["./practice_lessons/lesson_1/src/session_1v1.Rmd", "./practice_lessons/lesson_2/src/session_2v1.Rmd", "./create_corpora/src/pres_philpeople.Rmd", "./create_corpora/src/pres_make_corpus.Rmd", "./create_corpora/src/pres_standfordEnc.Rmd"]
 output_dir: "docs"
 output: html_document
 ---
