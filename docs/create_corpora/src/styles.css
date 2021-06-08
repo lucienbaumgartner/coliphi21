@@ -1,0 +1,22 @@
+pre:not(.sourceCode) {
+  overflow: auto !important;
+  max-height: 200px;
+}
+pre:not(.sourceCode) code {
+  white-space: pre;
+}
+pre.sourceCode {
+  border-radius: 10px;
+}
+#TOC {
+  top: 1%;
+  opacity: 0.5;
+}
+#TOC:hover {
+  opacity: 1;
+}
+h4 {
+  padding-top: 40px;
+  padding-bottom: 10px;
+  color: #69B3A2 !important;
+}

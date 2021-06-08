@@ -1,3 +1,28 @@
+---
+title: "Session 3:<br>Create Corpus"
+author: "Lucien Baumgartner"
+date: "5/27/2021"
+mail: "lucien.baumgartner@philos.uzh.ch"
+github: "lucienbaumgartner/coliphi21"
+home: "https://lucienbaumgartner.github.io/"
+output: 
+  epuRate::epurate:
+      toc: TRUE
+      number_sections: FALSE
+      code_folding: "show"
+---
+```{r setup, include=FALSE}
+options(width = 999)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = F)
+#library(devtools)
+#install_github("holtzy/epuRate")
+library(epuRate)
+library(rmarkdown)
+```
+
+<link rel="stylesheet" href="styles.css">
+
+```{r}
 library(jsonlite)
 library(stringi)
 library(tidyverse)
@@ -5,10 +30,15 @@ library(quanteda)
 library(readtext)
 
 rm(list = ls())
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+```
 
-## the stanford corpus
-df <- readtext('../output/stanfordEnc/txt/*.json', text_field = "body.text", verbosity = 3)
+```{r eval=F}
+setwd('~/coliphi21/create_corpora/src')
+```
+
+```{r}
+## the SEP corpus
+df <- readtext('../output/stanfordEnc/txt/*.json', text_field = "body.text", verbosity = 0)
 df <- corpus(df)
 docvars(df) <- mutate(docvars(df), doc = docnames(df))
 df <- corpus_subset(df, !duplicated(docvars(df)$url))
@@ -20,7 +50,7 @@ files <- dir(path, pattern = "*.json")
 
 meta <- files %>%
   map_df(~mutate(fromJSON(file.path(path, .), flatten = TRUE), doc = .))
-sort(table(meta$geo.type))
+sort(table(meta$geo.type), decreasing = T)
 length(unique(meta$doc))
 meta <- 
   meta %>% 
@@ -33,6 +63,7 @@ table(meta$doc%in%df$doc)
 docvars(df) <- left_join(docvars(df), meta, by='doc')
 docvars(df) <- mutate(docvars(df), lat = as.numeric(lat), lon = as.numeric(lon))
 sfe <- df
-sfe <- as.data.frame(sfe)
 
-save(sfe, file = '../output/stanfordEnc/fin/stanford-encyclopedia.RDS')
+sfe
+```
+

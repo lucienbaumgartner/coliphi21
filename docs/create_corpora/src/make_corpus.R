@@ -30,14 +30,9 @@ meta <-
 
 ## join
 table(meta$doc%in%df$doc)
-#meta$doc[!meta$doc%in%df$doc]
 docvars(df) <- left_join(docvars(df), meta, by='doc')
 docvars(df) <- mutate(docvars(df), lat = as.numeric(lat), lon = as.numeric(lon))
 sfe <- df
-
-## remove latex stuff
-#p <- sfe[['logic-algebraic-propositional.json']]
-#gsub('\\\\\\((.*?)\\\\\\)|\\\\\\[(.*?)\\\\\\]', '', p)
 sfe <- as.data.frame(sfe)
 
 save(sfe, file = '../output/stanfordEnc/fin/stanford-encyclopedia.RDS')

@@ -6,15 +6,15 @@ output: ioslides_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 ```
 
 ## Overview
 
 - Mainframes
-  - Scraper
-  - Crawler
   - APIs
+  - Scrapers
+  - Crawlers
 - Web ontology
   - HTML 
   - JS
@@ -23,22 +23,164 @@ knitr::opts_chunk$set(echo = FALSE)
 - Project planning
 - From 0 to data
 
+# Mainframes
 
-## Slide with Bullets
+## API
+- Application Programming Interface: provided by a host (company, etc.)
+  - send query
+  - receive response
+- Popular: Reddit, Twitter, Google Maps
+- Often requires authorization parameters -> make developer profile
+- Very easy to handle
+  - Responses have identical structure
+  - Response contains all available data
+  - No need to know anything about web ontology
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+## Scraper
+- Code to automatically extract user-defined data from webpages
+- Runs over pre-defined set of URLs
+- Static components:
+  - Extracts the same content across pages
+- Dynamic components: 
+  - Adapts what is extracted based on structure of page and availability of data
+- Beginner-Pro: 
+  - User needs to be familiar with information storage on pages
 
-## Slide with R Output
+## Crawler
+- Code
+  - that extracts links from an initial page 
+  - cycles over all links `x...z`
+    - extract all links from `x`
+    - cycles over all links in `x`
+    ...
+- Usually contains domain-restrictions 
+  - don't follow up on ads, etc.
+- Always combined with scraper-elements to extract data
+- Intermediate-Pro:
+  - User needs to be familiar with dynamic information retrieval techniques
 
-```{r cars, echo = TRUE}
-summary(cars)
+# Web ontology
+
+## HTML / CSS
+- Content that is "hard-coded"
+- Elements
+  - have tags: `<body>, <div>, <p>, <span>, ...`
+  - can have classes: `<p class = "textElement">Hi!</p>`
+  - can have IDs: `<p id = "byebye">Bye!</p>`
+  - can have a variety of attributes:
+    - `<a href = "https://www.whatever.com">Whatever</a>`
+    - ...
+- Elements can be targeted via 
+  - css selectors
+  - xpath
+
+## JavaScript
+- Content that is generated dynamically
+- To extract data, webpage needs to be loaded in a browser session
+- Dynamically created HTML-content can be targeted as before, as soon as page is loaded
+- Pure JS-content has to be targeted via JS-injection
+- More advanced stuff!
+
+## Handling static elements with R
+```{r echo=T}
+library(rvest)
+library(dplyr)
+refpage <- read_html('https://plato.stanford.edu/contents.html')
+link_nodes <- html_nodes(refpage, 'div#content ul li a')
+link_nodes %>% tail(2)
+links <- html_attr(link_nodes, 'href')
+links %>% tail(2)
 ```
 
-## Slide with Plot
-
-```{r pressure}
-plot(pressure)
+## CSS-Selectors
+```{r}
+page <- read_html(paste0('https://plato.stanford.edu/', links[1]))
 ```
+
+- `#<ID>`
+```{r}
+page %>% html_node('#preamble')
+```
+## CSS-Selectors
+- `.<class>`
+```{r}
+page %>% html_node('.hang')
+```
+## Xpath
+- `:not(<exception>)`
+- `:contains(<condition>)`
+```{r}
+page %>% 
+  html_nodes(xpath = '//div[not(contains(@id, "preamble"))]/p') %>% 
+  head
+```
+
+# Project Planning
+
+## Roadmap
+- Research question: what data do I need?
+- Choose Mainframe
+- Compartmentalize Project:
+  - Investigate source
+  - Collect primary data 
+  - Collect metadata
+  - Join
+  - Clean
+  - Annotate
+  
+## Organize yourself!
+IMAGE
+
+## Organize the data!
+- Specifiy level of analysis: document, paragraph, sentence, etc.
+- Divergent vs. unified analysis:
+  - Example: do you analyze SEP data and Philpeople data separately or together?
+- Ensure unique data-joins:
+  - Example: Join SEP data with Philpeople data about author(s)
+    - IDs, multiple joining variables
+- Handle variables with multiple values per rows:
+  - Example: multiple authors of a SEP entry
+    - Multiplication: rows X values
+    - Reduction: mutiple values per row to single vector
+  
+# From 0 to Data
+## The goal
+- Corpus with:
+  - Text data, w/o equations
+  - SEP metadata:
+    - created / last changes
+    - URL
+    - Up to 2 authors incl. contact info
+    - Bibliography (not incl.)
+    - Relation to other entries (not incl.)
+  - Philpeople metadata:
+    - University + address
+    - Geocoordinates of university
+    
+## Project organization
+- 3 Scripts:
+  - Text scraper, also for SEP metadata
+  - Philpeople scraper incl. semi-unsupervised geocoding
+  - Data join + cleanup
+- Time restriction: max. 3h coding, 2h runtime
+
+## Data organization
+- SEP data: 
+  - Text: json-file / document
+  - Bib: json-file / document (not incl.)
+  - Relational data: json-file / document (not incl.)
+- Philpeople data:
+  - Only first author
+  - If several geotags for same location (uni), choose most appropriate
+  - json-file / document
+- Hence: **per document join**
+  - all file for same document have same name and ID, but are located in different folders
+
+## Scripts
+- []()
+- []()
+- []()
+  
+
+
 
