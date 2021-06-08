@@ -16,8 +16,6 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
   - Scrapers
   - Crawlers
 - Web ontology
-  - HTML 
-  - JS
 - Handling static elements
 - Handling dynamic elements
 - Project planning
@@ -29,12 +27,13 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 - Application Programming Interface: provided by a host (company, etc.)
   - send query
   - receive response
-- Popular: Reddit, Twitter, Google Maps
+- Popular: Reddit, Twitter, Openmap
 - Often requires authorization parameters -> make developer profile
 - Very easy to handle
   - Responses have identical structure
   - Response contains all available data
   - No need to know anything about web ontology
+- [Example with Openmap](https://nominatim.openstreetmap.org/search?q=McMaster+University&format=json)
 
 ## Scraper
 - Code to automatically extract user-defined data from webpages
@@ -177,9 +176,9 @@ IMAGE
   - all file for same document have same name and ID, but are located in different folders
 
 ## Scripts
-- [SEP Scraper]()
-- []()
-- []()
+- [SEP scraper](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_standfordEnc.html)
+- [Philpeople Scraper](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_philpeople.html)
+- [Create Corpus](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_make_corpus.html)
   
 
 
