@@ -1,0 +1,44 @@
+---
+title: "Text Mining"
+author: "Lucien Baumgartner"
+date: "6/8/2021"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Overview
+
+- Mainframes
+  - Scraper
+  - Crawler
+  - APIs
+- Web ontology
+  - HTML 
+  - JS
+- Handling static elements
+- Handling dynamic elements
+- Project planning
+- From 0 to data
+
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+

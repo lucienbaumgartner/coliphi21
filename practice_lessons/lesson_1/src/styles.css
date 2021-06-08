@@ -6,7 +6,7 @@ pre:not(.sourceCode) code {
   white-space: pre;
 }
 .sourceCode {
-  overflow: hidden !important;
+  overflow: auto !important;
 }
 pre.sourceCode {
   border-radius: 10px;
@@ -17,4 +17,9 @@ pre.sourceCode {
 }
 #TOC:hover {
   opacity: 1;
+}
+h4 {
+  padding-top: 40px;
+  padding-bottom: 10px;
+  color: #69B3A2 !important;
 }

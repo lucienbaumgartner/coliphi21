@@ -1,7 +1,10 @@
 ---
-title: "Practice Lesson 2:\nInductive Analytics"
+title: "Practice Lesson 2:<br>Inductive Analytics"
 author: "Lucien Baumgartner & Kevin Reuter"
 date: "5/27/2021"
+mail: "lucien.baumgartner@philos.uzh.ch"
+github: "lucienbaumgartner/coliphi21"
+home: "https://lucienbaumgartner.github.io/"
 output: 
   epuRate::epurate:
       toc: TRUE
@@ -72,6 +75,9 @@ summary(sfe) %>% head
 docvars(sfe)
 ```
 
+#### > Exercise
+Familiarize yourself a little more with the data.
+
 ## Prep
 ```{r eval=FALSE}
 ## tokenization
@@ -100,6 +106,9 @@ load('../input/steps/dfm_initial.RDS')
 ```{r}
 dfm_sfe
 ```
+
+#### > Exercise
+Check whether there is still some noise in the data and remove it. Hint: Scan through the topfeatures.
 
 
 ## Scaling: correspondence analysis
@@ -152,7 +161,7 @@ sfe_cluster <- hclust(sfe_dist_mat, method = 'ward.D')
 sfe_cluster$labels <- gsub('\\.json(\\.[0-9])?', '', docnames(dfm_sfe))
 ## determine best numbers of clusters
 # fviz_nbclust(as.matrix(sfe_dist_mat), FUN = hcut, method = "wss")
-## cut tree into two groups
+## cut tree into four groups
 clusters <- cutree(sfe_cluster, k = 4)
 ## add cluster-data to the correspondence analysis
 sfe_ca_hcl <- left_join(sfe_ca, data.frame(cluster = clusters, id = names(clusters)))
@@ -163,6 +172,9 @@ ggplot(sfe_ca_hcl, aes(x=dim1, y=dim2, label=id)) +
 ## hierarchical clustering doesn't provide discrete cluster along
 ## the dimensions of the correspondance analysis
 ```
+
+#### Exercise
+Check whether another clustering-method yields better results. Hint: Checkout the `hclust`-function.
 
 ## Unsupervised LDA
 ```{r echo = FALSE}
@@ -188,6 +200,9 @@ ggplot(sfe_ca, aes(x=dim1, y=dim2, color=topics)) +
   labs(title = 'Correspondence Analysis with Topic Annotation (k=10)')
 ```
 
+#### > Exercise
+Change the names of the topics (to some meaningful description) before plotting.
+
 ## Cosine similarities for documents
 ```{r echo=TRUE, results='asis'}
 ## subset documents about logic
@@ -200,7 +215,10 @@ as.data.frame(logic_sim) %>%
   arrange(desc(cosine))
 ```
 
-## Cosine similarities for featues
+#### > Exercise
+Redo the cosine similarities for another subset of documents.
+
+## Cosine similarities for features
 ```{r echo=TRUE, results='asis'}
 ## subset documents about feminism
 fem <- dfm_subset(dfm_sfe, grepl('(?<=\\-)fem|fem.*(?=\\-)', docnames(dfm_sfe), perl = T))
@@ -213,3 +231,7 @@ as.data.frame(fem_sim) %>%
   arrange(feature2, desc(cosine)) %>% 
   slice_head(n=5)
 ```
+
+#### > Exercise
+Redo the cosine similarities for a different set of features.
+
