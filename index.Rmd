@@ -26,7 +26,7 @@ Hi! This is the online repository for CoLiPhi21:
 <br>
 
 - Justin Sytsma I - Corpus Methods and Experimental Philosophy:
-  - [Presentation](./practice_lessons/justin/2nd/Corpus Methods and Experimental Philosophy.pdf)
+  - [Presentation](./practice_lessons/justin/1st/Corpus Methods and Experimental Philosophy.pdf)
   
 <br>
 
