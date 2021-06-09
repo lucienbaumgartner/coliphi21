@@ -1,6 +1,6 @@
 ---
 title: "Practice Lesson 1:<br>The Quanteda Suite - Sandbox-Edition"
-author: "Lucien Baumgartner & Kevin Reuter"
+author: "Lucien Baumgartner"
 date: "5/27/2021"
 mail: "lucien.baumgartner@philos.uzh.ch"
 github: "lucienbaumgartner/coliphi21"
