@@ -16,7 +16,7 @@
 <script src="site_libs/header-attrs-2.8/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -87,76 +87,6 @@ pre code {
 </style>
 
 
-<style type="text/css">
-.dropdown-submenu {
-  position: relative;
-}
-.dropdown-submenu>.dropdown-menu {
-  top: 0;
-  left: 100%;
-  margin-top: -6px;
-  margin-left: -1px;
-  border-radius: 0 6px 6px 6px;
-}
-.dropdown-submenu:hover>.dropdown-menu {
-  display: block;
-}
-.dropdown-submenu>a:after {
-  display: block;
-  content: " ";
-  float: right;
-  width: 0;
-  height: 0;
-  border-color: transparent;
-  border-style: solid;
-  border-width: 5px 0 5px 5px;
-  border-left-color: #cccccc;
-  margin-top: 5px;
-  margin-right: -10px;
-}
-.dropdown-submenu:hover>a:after {
-  border-left-color: #adb5bd;
-}
-.dropdown-submenu.pull-left {
-  float: none;
-}
-.dropdown-submenu.pull-left>.dropdown-menu {
-  left: -100%;
-  margin-left: 10px;
-  border-radius: 6px 0 6px 6px;
-}
-</style>
-
-<script type="text/javascript">
-// manage active state of menu based on current page
-$(document).ready(function () {
-  // active menu anchor
-  href = window.location.pathname
-  href = href.substr(href.lastIndexOf('/') + 1)
-  if (href === "")
-    href = "index.html";
-  var menuAnchor = $('a[href="' + href + '"]');
-
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
-
-  // Navbar adjustments
-  var navHeight = $(".navbar").first().height() + 15;
-  var style = document.createElement('style');
-  var pt = "padding-top: " + navHeight + "px; ";
-  var mt = "margin-top: -" + navHeight + "px; ";
-  var css = "";
-  // offset scroll position for anchor links (for fixed navbar)
-  for (var i = 1; i <= 6; i++) {
-    css += ".section h" + i + "{ " + pt + mt + "}\n";
-  }
-  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
-  document.head.appendChild(style);
-});
-</script>
 
 <!-- tabsets -->
 
@@ -229,35 +159,6 @@ $(document).ready(function () {
 
 
 
-<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="index.html">Practice Sessions</a>
-    </div>
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-        <li>
-  <a href="index.html">Home</a>
-</li>
-<li>
-  <a href="practice_lessons/lesson_1/src/session_1v1.html">Session 1</a>
-</li>
-<li>
-  <a href="practice_lessons/lesson_2/src/session_2v1.html">Session 2</a>
-</li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        
-      </ul>
-    </div><!--/.nav-collapse -->
-  </div><!--/.container -->
-</div><!--/.navbar -->
-
 <div id="header">
 
 
@@ -270,39 +171,58 @@ $(document).ready(function () {
 <div id="corpus-linguistics-and-philosophy-workshop-21" class="section level2">
 <h2>Corpus Linguistics and Philosophy Workshop 21</h2>
 <p>Hi! This is the online repository for CoLiPhi21:</p>
+<p><br></p>
 <ul>
 <li>Mark Alfano I - Nietzsche Corpus Analysis:
 <ul>
 <li><a href="./practice_lessons/mark/1st/Nietzschescripts.html">Presentation</a></li>
 <li><a href="./practice_lessons/mark/1st/Nietzschescripts.Rmd">Code</a></li>
-<li><a href="./practice_lessons/mark/1st/data/nietzsche.zip">Data</a> <br></li>
+<li><a href="./practice_lessons/mark/1st/data/nietzsche.zip">Data</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Mark Alfano II - BLM:
 <ul>
 <li><a href="./practice_lessons/mark/2nd/BLMscripts.html">Presentation</a></li>
 <li><a href="./practice_lessons/mark/2nd/BLMscripts.Rmd">Code</a></li>
-<li><a href="./practice_lessons/mark/2nd/data/blm.zip">Data</a> <br></li>
+<li><a href="./practice_lessons/mark/2nd/data/blm.zip">Data</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Justin Sytsma I - Corpus Methods and Experimental Philosophy:
 <ul>
-<li><a href="./practice_lessons/mark/2nd/Corpus%20Methods%20and%20Experimental%20Philosophy.pdf">Presentation</a> <br></li>
+<li><a href="./practice_lessons/justin/2nd/Corpus%20Methods%20and%20Experimental%20Philosophy.pdf">Presentation</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Justin Sytsma II - Causal Attributions and Corpus Analysis:
 <ul>
-<li><a href="./practice_lessons/mark/2nd/Causal%20Attributions%20and%20Corpus%20Analysis.pdf">Presentation</a></li>
-<li><a href="./practice_lessons/mark/2nd/data/causal_attribution.zip">Data</a> <br></li>
+<li><a href="./practice_lessons/justin/2nd/Causal%20Attributions%20and%20Corpus%20Analysis.pdf">Presentation</a></li>
+<li><a href="./practice_lessons/justin/2nd/data/causal_attribution.zip">Data</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Lucien Baumgartner I - The Quanteda-Suite:
 <ul>
 <li><a href="./practice_lessons/lesson_1/src/session_1v1.html">Presentation</a></li>
-<li><a href="./practice_lessons/lesson_1/src/session_1v1.Rmd">Code</a> <br></li>
+<li><a href="./practice_lessons/lesson_1/src/session_1v1.Rmd">Code</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Lucien Baumgartner II - Inductive Analytics:
 <ul>
 <li><a href="./practice_lessons/lesson_2/src/session_2v1.html">Presentation</a></li>
 <li><a href="./practice_lessons/lesson_2/src/session_2v1.Rmd">Code</a></li>
-<li><a href="./practice_lessons/lesson_2/src/session_2v1.">Data</a> <br></li>
+<li><a href="./practice_lessons/lesson_2/src/session_2v1.">Data</a></li>
 </ul></li>
+</ul>
+<p><br></p>
+<ul>
 <li>Lucien Baumgartner III - Text Mining:
 <ul>
 <li><a href="./practice_lessons/lesson_3/pres.html">Presentation</a></li>

@@ -1,11 +1,5 @@
 name: "coliphi"
 output_dir: "docs"
-navbar:
-  title: "Practice Sessions"
-  left:
-    - text: "Home"
-      href: index.html
-    - text: "Session 1"
-      href: practice_lessons/lesson_1/src/session_1v1.html
-    - text: "Session 2"
-      href: practice_lessons/lesson_2/src/session_2v1.html
+output:
+  html_document:
+    theme: flatly

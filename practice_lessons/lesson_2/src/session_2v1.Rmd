@@ -14,7 +14,7 @@ output:
 
 ```{r setup, include=FALSE}
 options(width = 999)
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 #library(devtools)
 #install_github("holtzy/epuRate")
 library(epuRate)
@@ -40,6 +40,7 @@ library(ggrepel)
 library(ggdendro)
 library(factoextra)
 library(lattice)
+library(spacyr)
 ```
 
 ## Clean workspace and set working directory
@@ -50,6 +51,8 @@ rm(list=ls())
 ```{r eval=FALSE}
 ## set working directory (WD)
 path <- '~/coliphi21/practice_lessons/lesson_2/src/'
+## you can also set it dynamically: 
+## setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd(path)
 ```
 ```{r}
@@ -62,8 +65,16 @@ getwd()
 For this tutorial you can either work with your own data, or the pre-built copora provided in the `/input`-folder for the first practice session. The `quanteda`-package also contains pre-built corpora you can use. For this session, we scraped the Stanford Encyclopedia of Philosophy and built a corpus including additional metadata.
 
 ```{r}
+## relative path
+load('../input/stanford-encyclopedia.RDS')
+```
+```{r eval=FALSE}
+## absolute path
 load('~/coliphi21/practice_lessons/lesson_2/input/stanford-encyclopedia.RDS')
 ```
+
+#### Disclaimer
+Loading the data above will import a pre-built corpus object into R, which is called `sfe`.
 
 ## Inspect data
 ```{r}
@@ -107,8 +118,19 @@ load('../input/steps/dfm_initial.RDS')
 dfm_sfe
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+##### Task
 Check whether there is still some noise in the data and remove it. Hint: Scan through the topfeatures.
+
+##### Solution
+```{r eval=FALSE}
+## remove phi
+toks <- tokens_select(toks, pattern = 'φ', valuetype = 'regex', selection = 'remove')
+## create dfm
+dfm_sfe <- dfm(toks) %>% 
+           dfm_trim(min_termfreq = 0.8, termfreq_type = "quantile",
+                    max_docfreq = 0.1, docfreq_type = "prop")
+```
 
 
 ## Scaling: correspondence analysis
@@ -127,8 +149,6 @@ sfe_ca <- data.frame(dim1 = coef(sfe_ca, doc_dim = 1)$coef_document,
 
 sfe_ca$id <- gsub('\\.json(\\.[0-9])?', '', rownames(sfe_ca))
 sfe_ca
-## set seed for plot and subsample (labels)
-set.seed(38972)
 ## plot full data with branch annotation
 ggplot(sfe_ca, aes(x=dim1, y=dim2, label=id)) +
   geom_point(aes(color=dim1-dim2), alpha = 0.2) +
@@ -148,33 +168,6 @@ ggplot(sfe_ca, aes(x=dim1, y=dim2, label=id)) +
   theme(plot.title = element_text(face='bold')) +
   labs(title = 'Correspondence Analysis: Zoom')
 ```
-
-## Hierarchical clustering
-```{r fig.height=5, fig.width=10, fig.align='center'}
-## hierarchical clustering - get distances on normalized dfm
-sfe_dist_mat <- dfm_weight(dfm_sfe, scheme = "prop") %>%
-    textstat_dist(method = "euclidean") %>% 
-    as.dist()
-## hiarchical clustering the distance object
-sfe_cluster <- hclust(sfe_dist_mat, method = 'ward.D')
-# label with document names
-sfe_cluster$labels <- gsub('\\.json(\\.[0-9])?', '', docnames(dfm_sfe))
-## determine best numbers of clusters
-# fviz_nbclust(as.matrix(sfe_dist_mat), FUN = hcut, method = "wss")
-## cut tree into four groups
-clusters <- cutree(sfe_cluster, k = 4)
-## add cluster-data to the correspondence analysis
-sfe_ca_hcl <- left_join(sfe_ca, data.frame(cluster = clusters, id = names(clusters)))
-## plot
-ggplot(sfe_ca_hcl, aes(x=dim1, y=dim2, label=id)) +
-  geom_point(aes(color=as.factor(cluster)), alpha = 0.2) +
-  facet_grid(~as.factor(cluster))
-## hierarchical clustering doesn't provide discrete cluster along
-## the dimensions of the correspondance analysis
-```
-
-#### Exercise
-Check whether another clustering-method yields better results. Hint: Checkout the `hclust`-function.
 
 ## Unsupervised LDA
 ```{r echo = FALSE}
@@ -200,10 +193,100 @@ ggplot(sfe_ca, aes(x=dim1, y=dim2, color=topics)) +
   labs(title = 'Correspondence Analysis with Topic Annotation (k=10)')
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Change the names of the topics (to some meaningful description) before plotting.
 
-## Cosine similarities for documents
+##### Solution
+```{r eval=F}
+sfe_ca$topics <- recode(sfe_ca$topics, topic1 = "body-mind", topic2 = "biology", 
+                        topic3 = "feminism/critical thinking", topic4 = "math/ai", 
+                        topic5 = "physics", topic6 = "classics", topic7 = "eastern",
+                        topic8 = "phenomenology", topic9 = "religion", 
+                        topic10 = "middle-eastern/eastern")
+```
+
+## PoS-tagging - leaving the sandbox
+```{r}
+## set seed
+set.seed(48621)
+## draw a random sample of 20 documents
+sfe_sub <- sfe[sample(1:length(sfe), 5)]
+sfe_sub
+## PoS-tagging
+sfe_pos <- spacy_parse(sfe_sub, pos = T, tag = T, lemma = T, entity = T, dependency = T)
+sfe_pos
+## look up which adjectives are used most frequently
+sfe_pos %>% 
+  filter(pos == 'ADJ') %>% 
+  group_by(token) %>% 
+  summarise(n.occurences = n()) %>% 
+  arrange(desc(n.occurences))
+## look up which nouns are preceded by the adjective "rational"
+rational_noun <- sfe_pos %>% filter(pos == 'NOUN' & lag(token, 1) == 'rational')
+rational_noun
+# get top 2 nouns per document
+rational_noun %>% 
+  group_by(doc_id, token) %>% 
+  summarise(n.occurences = n()) %>% 
+  arrange(doc_id, desc(n.occurences)) %>% 
+  slice(1:2)
+```
+
+## Augment your sandbox
+```{r}
+## to create a corpus-object from your pos-tagged tokens
+## we need unique IDs
+sfe_pos
+## make doc_ids unique
+sfe_pos <- mutate(sfe_pos, doc_id = make.unique(doc_id))
+## remove punctuation and spaces
+sfe_pos <- filter(sfe_pos, !pos %in% c('PUNCT', 'SPACE'))
+## make token corpus
+sfe_pos <- corpus(sfe_pos, text_field = 'token', docid_field = 'doc_id')
+sfe_pos
+docvars(sfe_pos)
+## WARNING! This data-structure is incompatible with our document-based corpus!!!
+docvars(sfe_sub)
+## ... but we can add the info to our token corpus
+# add initial document ID to both sets of docvars
+docvars(sfe_pos)$initial_docid <- gsub('\\.json.*', '', docid(sfe_pos))
+docvars(sfe_sub)$initial_docid <- gsub('\\.json.*', '', docid(sfe_sub))
+# join by initial id
+docvars(sfe_pos) <- left_join(docvars(sfe_pos), docvars(sfe_sub), by = 'initial_docid')
+docvars(sfe_pos)
+## Keep in mind: your corpus is still on token level!
+```
+
+
+## Additional material
+
+### Hierarchical clustering
+```{r fig.height=5, fig.width=10, fig.align='center'}
+## hierarchical clustering - get distances on normalized dfm
+sfe_dist_mat <- dfm_weight(dfm_sfe, scheme = "prop") %>%
+    textstat_dist(method = "euclidean") %>% 
+    as.dist()
+## hiarchical clustering the distance object
+sfe_cluster <- hclust(sfe_dist_mat, method = 'ward.D')
+# label with document names
+sfe_cluster$labels <- gsub('\\.json(\\.[0-9])?', '', docnames(dfm_sfe))
+## determine best numbers of clusters
+# fviz_nbclust(as.matrix(sfe_dist_mat), FUN = hcut, method = "wss")
+## cut tree into four groups
+clusters <- cutree(sfe_cluster, k = 4)
+## add cluster-data to the correspondence analysis
+sfe_ca_hcl <- left_join(sfe_ca, data.frame(cluster = clusters, id = names(clusters)))
+## plot
+ggplot(sfe_ca_hcl, aes(x=dim1, y=dim2, label=id)) +
+  geom_point(aes(color=as.factor(cluster)), alpha = 0.2) +
+  facet_grid(~as.factor(cluster))
+## hierarchical clustering doesn't provide discrete cluster along
+## the dimensions of the correspondance analysis
+```
+
+### Cosine similarities for documents
 ```{r echo=TRUE, results='asis'}
 ## subset documents about logic
 logic <- dfm_subset(dfm_sfe, grepl('(?<=\\-)logic|logic(?=\\-)', docnames(dfm_sfe), perl = T))
@@ -215,16 +298,32 @@ as.data.frame(logic_sim) %>%
   arrange(desc(cosine))
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Redo the cosine similarities for another subset of documents.
 
-## Cosine similarities for features
+##### Solution
+```{r}
+## subset documents about aesthetics
+aesth <- dfm_subset(dfm_sfe, grepl('aesthetics', docnames(dfm_sfe), perl = T))
+## compute cosine similarity
+aesth <- textstat_simil(aesth, margin = 'document', method = 'cosine')
+## all pairs with a cosine similarity > .2
+as.data.frame(aesth) %>% 
+  filter(cosine > .2) %>% 
+  arrange(desc(cosine))
+```
+
+
+### Cosine similarities for features
 ```{r echo=TRUE, results='asis'}
 ## subset documents about feminism
 fem <- dfm_subset(dfm_sfe, grepl('(?<=\\-)fem|fem.*(?=\\-)', docnames(dfm_sfe), perl = T))
 ## compute cosine similarities for the features 
 ## "empowerment", "embodiment", and "rape"
-fem_sim <- textstat_simil(logic, logic[, c("empowerment", "embodiment", "rape")], margin = 'feature', method = 'cosine')
+fem_sim <- textstat_simil(logic, logic[, c("empowerment", "embodiment", "rape")], 
+                          margin = 'feature', method = 'cosine')
 ## top 5 results per feature
 as.data.frame(fem_sim) %>% 
   group_by(feature2) %>% 
@@ -232,6 +331,20 @@ as.data.frame(fem_sim) %>%
   slice_head(n=5)
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Redo the cosine similarities for a different set of features.
+
+##### Solution
+```{r}
+fem_sim <- textstat_simil(logic, logic[, c("feminism", "patriarchy")], 
+                          margin = 'feature', method = 'cosine')
+## top 5 results per feature
+as.data.frame(fem_sim) %>% 
+  group_by(feature2) %>% 
+  arrange(feature2, desc(cosine)) %>% 
+  slice_head(n=5)
+```
+
 

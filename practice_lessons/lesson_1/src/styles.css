@@ -6,7 +6,10 @@ pre:not(.sourceCode) code {
   white-space: pre;
 }
 .sourceCode {
+  overflow: hidden !important;
+  /*
   overflow: auto !important;
+  */
 }
 pre.sourceCode {
   border-radius: 10px;

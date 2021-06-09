@@ -22,6 +22,11 @@ library(rmarkdown)
 ```
 
 <link rel="stylesheet" href="styles.css">
+
+
+<div style="text-align:center;padding-top:20">
+![](../../../res/p/data_science.png)
+</div>
 <br>
 <br>
 
@@ -38,12 +43,16 @@ library(stringi)
 library(quanteda.textplots)
 library(gridExtra)
 ```
-
-## Clean workspace and set working directory
 ```{r}
 ## clean workspace
 rm(list=ls())
 ```
+
+
+## Clean workspace and set working directory
+
+This step is only for those who use their own corpora.
+
 ```{r eval=FALSE}
 ## set working directory (WD)
 path <- '~/coliphi21/practice_lessons/lesson_1/src/'
@@ -53,7 +62,7 @@ setwd(path)
 
 ## Import data
 
-For this tutorial you can either work with your own data, or the pre-built copora provided in the `/input`-folder for the first practice session. The `quanteda`-package also contains pre-built corpora you can use. For this session, I will use the `quanteda`-corpus `data_corpus_inaugural` containing the inaugural addresses of US presidents since 1789. If you work with your own data or our other pre-built corpora, [this vignette](https://tutorials.quanteda.io/import-data/) might be helpful.
+For this tutorial we will use the `quanteda`-corpus `data_corpus_inaugural` containing the inaugural addresses of US presidents since 1789. For the next session, you will be able to work with your own data.
 
 ```{r}
 df <- data_corpus_inaugural
@@ -80,8 +89,16 @@ str(df)
 docvars(df) %>% head
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Compute the number of Democrat and Republican speeches. Hint: checkout the `table`-function.
+
+##### Solution
+```{r}
+table(docvars(df)$Party)
+```
+
 
 ### Selecting documents
 ```{r}
@@ -94,10 +111,26 @@ cat(biden)
 cat(txt['1789-Washington'])
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Extract both the Trump and Biden speech at the same time. Hint: `|` means OR in regex-functions, such as `grepl`.
 
+##### Solution
+```{r}
+txt[grepl('Biden|Trump', names(txt))]
+```
+
+
+
 ### Word tokens and the document-term matrix
+
+<div style="text-align:center;padding-top:10px;margin-bottom:-80px">
+![](../../../res/p/session1-workflow.png)
+</div>
+<br>
+<br>
+
 ```{r}
 ## word tokenization
 ?tokens
@@ -108,8 +141,18 @@ dfx <- dfm(toks)
 dfx
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Remove numbers (part of the noise) from the tokens. Hint: Checkout the `tokens`-function.
+
+##### Solution
+```{r eval=FALSE}
+toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F, remove_numbers = T,
+               remove_url = T, remove_separators = T)
+dfx <- dfm(toks)
+```
+
 
 ### Top features
 ```{r}
@@ -126,8 +169,17 @@ sel_toks <- tokens_select(toks, pattern = stopwords("en"), selection = "remove")
 dfx <- dfm(sel_toks)
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Remove additional words that are not part of the stopwords-vector, such as "much", "every", and "never". Hint: Two or more vectors can be concatenated by putting them into one and the same vector.
+
+##### Solution
+```{r}
+sel_toks <- tokens_select(toks, pattern = c(stopwords("en"), 'much', 'every', 'never'), selection = "remove")
+```
+
+
 
 ```{r}
 # again: 10 features for every document, now without stopwords
@@ -137,11 +189,23 @@ docvars(dfx)
 topfeatures(dfx, n = 10, groups = Party)
 ```
 
-#### > Exercise
+#### > Exercise {.tabset .tabset-fade}
+
+##### Task
 Print topfeatures per President.
+
+##### Solution
+```{r}
+topfeatures(dfx, n = 10, groups = President)
+```
+
 
 ## Level of analysis: sentence
 Sometimes we want to analyze certain indicators on sentence-level. To show how to go about doing so, we will compute the per-sentence sentiment in Biden's 2021 speech.
+
+<div style="text-align:center;padding-top:10px;margin-bottom:-80px">
+![](../../../res/p/session1-sentiment.png)
+</div>
 
 ### Reshape, Subset and Prepare Documents
 ```{r}
@@ -210,12 +274,13 @@ sentences[55:65]
 ## as expected, Biden is mentioning ISSUES, but in a combative way
 ```
 
-#### > Exercise
-Redo the sentiment annotation and visualization using the sentiWords-dictionary.
-
 ## Level of analysis: token windows
 Let's compare the word embeddings for 'progress', 'spirit', 'world', 'nation', 'duty', and 'war' 
 between Democrats and Republicans. We define the embedding as a window of +/-10 words around these keywords.
+
+<div style="text-align:center;padding-top:0px;margin-bottom:-120px">
+![](../../../res/p/session1-tokenwindows.png)
+</div>
 
 ### Prep
 ```{r}

@@ -9,37 +9,45 @@ output: html_document
 
 Hi! This is the online repository for CoLiPhi21:
 
+<br>
+
 - Mark Alfano I - Nietzsche Corpus Analysis:
   - [Presentation](./practice_lessons/mark/1st/Nietzschescripts.html)
   - [Code](./practice_lessons/mark/1st/Nietzschescripts.Rmd)
   - [Data](./practice_lessons/mark/1st/data/nietzsche.zip)
-<br>  
+  
+<br>
 
 - Mark Alfano II - BLM:
   - [Presentation](./practice_lessons/mark/2nd/BLMscripts.html)
   - [Code](./practice_lessons/mark/2nd/BLMscripts.Rmd)
   - [Data](./practice_lessons/mark/2nd/data/blm.zip)
+
 <br>
 
 - Justin Sytsma I - Corpus Methods and Experimental Philosophy:
-  - [Presentation](./practice_lessons/mark/2nd/Corpus Methods and Experimental Philosophy.pdf)
-<br>  
+  - [Presentation](./practice_lessons/justin/2nd/Corpus Methods and Experimental Philosophy.pdf)
+  
+<br>
 
 - Justin Sytsma II - Causal Attributions and Corpus Analysis:
-  - [Presentation](./practice_lessons/mark/2nd/Causal Attributions and Corpus Analysis.pdf)
-  - [Data](./practice_lessons/mark/2nd/data/causal_attribution.zip)
+  - [Presentation](./practice_lessons/justin/2nd/Causal Attributions and Corpus Analysis.pdf)
+  - [Data](./practice_lessons/justin/2nd/data/causal_attribution.zip)
+ 
 <br>
 
 - Lucien Baumgartner I - The Quanteda-Suite:
   - [Presentation](./practice_lessons/lesson_1/src/session_1v1.html)
   - [Code](./practice_lessons/lesson_1/src/session_1v1.Rmd)
-<br>
+ 
+ <br>
 
 - Lucien Baumgartner II - Inductive Analytics:
   - [Presentation](./practice_lessons/lesson_2/src/session_2v1.html)
   - [Code](./practice_lessons/lesson_2/src/session_2v1.Rmd)
   - [Data](./practice_lessons/lesson_2/src/session_2v1.)
-<br>
+
+<br>  
 
 - Lucien Baumgartner III - Text Mining:
   - [Presentation](./practice_lessons/lesson_3/pres.html)
