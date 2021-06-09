@@ -45,12 +45,8 @@ Hi! This is the online repository for CoLiPhi21:
 - Lucien Baumgartner II - Inductive Analytics:
   - [Presentation](./practice_lessons/lesson_2/src/session_2v1.html)
   - [Code](./practice_lessons/lesson_2/src/session_2v1.Rmd)
-  - [Data](./practice_lessons/lesson_2/src/session_2v1.)
+  - [Data](./create_corpora/output/stanfordEnc/fin/stanford-encyclopedia.RDS)
 
 <br>  
 
-- Lucien Baumgartner III - Text Mining:
-  - [Presentation](./practice_lessons/lesson_3/pres.html)
-  - [Code](./create_corpora/src/text_mining.zip)
-  
 
