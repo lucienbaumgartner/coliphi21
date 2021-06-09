@@ -5,7 +5,7 @@ output_dir: "docs"
 output: html_document
 ---
 
-## Corpus Linhuistics and Philosophy Workshop 21
+## Corpus Linguistics and Philosophy Workshop 21
 
 Hi! This is the online repository for CoLiPhi21:
 
