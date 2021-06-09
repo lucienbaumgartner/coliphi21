@@ -45,7 +45,8 @@ Hi! This is the online repository for CoLiPhi21:
 - Lucien Baumgartner II - Inductive Analytics:
   - [Presentation](./practice_lessons/lesson_2/src/session_2v1.html)
   - [Code](./practice_lessons/lesson_2/src/session_2v1.Rmd)
-  - [Data](./create_corpora/output/stanfordEnc/fin/stanford-encyclopedia.RDS)
+  - [Data (SEP)](./practice_lessons/lesson_2/input/stanford-encyclopedia.RDS)
+  - [Data (Reddit)](./practice_lessons/lesson_2/input/coliphi21_reddit.RDS)
 
 <br>  
 
