@@ -3,8 +3,10 @@ title: "Practice Lesson 1:<br>The Quanteda Suite - Sandbox-Edition"
 author: "Lucien Baumgartner"
 date: "5/27/2021"
 mail: "lucien.baumgartner@philos.uzh.ch"
-github: "lucienbaumgartner/coliphi21"
+github: "lucienbaumgartner/coliphi21/tree/site"
 home: "https://lucienbaumgartner.github.io/"
+editor_options:
+  chunk_output_type: console
 output: 
   epuRate::epurate:
       toc: TRUE
@@ -90,7 +92,6 @@ docvars(df) %>% head
 ```
 
 #### > Exercise {.tabset .tabset-fade}
-
 ##### Task
 Compute the number of Democrat and Republican speeches. Hint: checkout the `table`-function.
 
@@ -112,7 +113,6 @@ cat(txt['1789-Washington'])
 ```
 
 #### > Exercise {.tabset .tabset-fade}
-
 ##### Task
 Extract both the Trump and Biden speech at the same time. Hint: `|` means OR in regex-functions, such as `grepl`.
 
@@ -142,7 +142,6 @@ dfx
 ```
 
 #### > Exercise {.tabset .tabset-fade}
-
 ##### Task
 Remove numbers (part of the noise) from the tokens. Hint: Checkout the `tokens`-function.
 
@@ -180,6 +179,7 @@ sel_toks <- tokens_select(toks, pattern = c(stopwords("en"), 'much', 'every', 'n
 ```
 
 
+### Now let's have a look at it again:
 
 ```{r}
 # again: 10 features for every document, now without stopwords
