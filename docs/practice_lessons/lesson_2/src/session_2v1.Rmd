@@ -3,7 +3,7 @@ title: "Practice Lesson 2:<br>Inductive Analytics"
 author: "Lucien Baumgartner"
 date: "6/10/2021"
 mail: "lucien.baumgartner@philos.uzh.ch"
-github: "lucienbaumgartner/coliphi21"
+github: "lucienbaumgartner/coliphi21/tree/site"
 home: "https://lucienbaumgartner.github.io/"
 output: 
   epuRate::epurate:
