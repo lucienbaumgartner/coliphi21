@@ -5,6 +5,8 @@ date: "6/10/2021"
 mail: "lucien.baumgartner@philos.uzh.ch"
 github: "lucienbaumgartner/coliphi21/tree/site"
 home: "https://lucienbaumgartner.github.io/"
+editor_options:
+  chunk_output_type: console
 output: 
   epuRate::epurate:
       toc: TRUE
@@ -116,6 +118,7 @@ load('../input/steps/dfm_initial.RDS')
 ```
 ```{r}
 dfm_sfe
+topfeatures(dfm_sfe, n=200)
 ```
 
 #### > Exercise {.tabset .tabset-fade}
