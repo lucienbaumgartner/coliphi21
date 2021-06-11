@@ -15,11 +15,16 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
   - APIs
   - Scrapers
   - Crawlers
+- Exercises with the Reddit API
 - Web ontology
-- Handling static elements
-- Handling dynamic elements
-- Project planning
-- From 0 to data
+- Exercise with Google Scholar
+
+## The World Wide Web
+<br>
+<br>
+```{r, out.width = "600px", echo =FALSE, fig.align='center'}
+knitr::include_graphics("../../res/p/scraping.png")
+```
 
 # Mainframes
 
@@ -33,17 +38,39 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
   - Responses have identical structure
   - Response contains all available data
   - No need to know anything about web ontology
-- [Example with Openmap](https://nominatim.openstreetmap.org/search?q=McMaster+University&format=json)
+  
+## API - anyone?
 
-## Scraper
+<br>
+```{r, out.width = "600px", echo =FALSE, fig.align='center'}
+knitr::include_graphics("../../res/p/api1.jpeg")
+```
+
+## API? Doesn't work...
+
+<center>
+
+![](../../res/p/api2.jpeg)
+
+</center>
+
+## Web scraping 
+<br>
+<br>
+<br>
+```{r, out.width = "600px", echo =FALSE, fig.align='center'}
+knitr::include_graphics("../../res/p/scraping.jpeg")
+```
+
+## Scrapers
+
 - Code to automatically extract user-defined data from webpages
 - Runs over pre-defined set of URLs
 - Static components:
   - Extracts the same content across pages
 - Dynamic components: 
   - Adapts what is extracted based on structure of page and availability of data
-- Beginner-Pro: 
-  - User needs to be familiar with information storage on pages
+- User needs to be familiar with information storage on pages
 
 ## Crawler
 - Code
@@ -55,10 +82,24 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 - Usually contains domain-restrictions 
   - don't follow up on ads, etc.
 - Always combined with scraper-elements to extract data
-- Intermediate-Pro:
-  - User needs to be familiar with dynamic information retrieval techniques
+- User needs to be familiar with dynamic information retrieval techniques
+
+## Be the spider!
+
+<center>
+
+![](../../res/p/crawler1.jpeg)
+
+</center>
+
+# Let's try it!
 
 # Web ontology
+
+## The Family
+```{r, out.width = "800px", echo =FALSE, fig.align='center'}
+knitr::include_graphics("../../res/p/html_css.png")
+```
 
 ## HTML / CSS
 - Content that is "hard-coded"
@@ -80,105 +121,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 - Pure JS-content has to be targeted via JS-injection
 - More advanced stuff!
 
-## Handling static elements with R
-```{r echo=T}
-library(rvest)
-library(dplyr)
-refpage <- read_html('https://plato.stanford.edu/contents.html')
-link_nodes <- html_nodes(refpage, 'div#content ul li a')
-link_nodes %>% tail(2)
-links <- html_attr(link_nodes, 'href')
-links %>% tail(2)
-```
-
-## CSS-Selectors
-```{r}
-page <- read_html(paste0('https://plato.stanford.edu/', links[1]))
-```
-
-- `#<ID>`
-```{r}
-page %>% html_node('#preamble')
-```
-## CSS-Selectors
-- `.<class>`
-```{r}
-page %>% html_node('.hang')
-```
-## Xpath
-- `:not(<exception>)`
-- `:contains(<condition>)`
-```{r}
-page %>% 
-  html_nodes(xpath = '//div[not(contains(@id, "preamble"))]/p') %>% 
-  head
-```
-
-# Project Planning
-
-## Roadmap
-- Research question: what data do I need?
-- Choose Mainframe
-- Compartmentalize Project:
-  - Investigate source
-  - Collect primary data 
-  - Collect metadata
-  - Join
-  - Clean
-  - Annotate
-  
-## Organize yourself!
-IMAGE
-
-## Organize the data!
-- Specifiy level of analysis: document, paragraph, sentence, etc.
-- Divergent vs. unified analysis:
-  - Example: do you analyze SEP data and Philpeople data separately or together?
-- Ensure unique data-joins:
-  - Example: Join SEP data with Philpeople data about author(s)
-    - IDs, multiple joining variables
-- Handle variables with multiple values per rows:
-  - Example: multiple authors of a SEP entry
-    - Multiplication: rows X values
-    - Reduction: mutiple values per row to single vector
-  
-# From 0 to Data
-## The goal
-- Corpus with:
-  - Text data, w/o equations
-  - SEP metadata:
-    - created / last changes
-    - URL
-    - Up to 2 authors incl. contact info
-    - Bibliography (not incl.)
-    - Relation to other entries (not incl.)
-  - Philpeople metadata:
-    - University + address
-    - Geocoordinates of university
-    
-## Project organization
-- 3 Scripts:
-  - Text scraper, also for SEP metadata
-  - Philpeople scraper incl. semi-unsupervised geocoding
-  - Data join + cleanup
-- Time restriction: max. 3h coding, 2h runtime
-
-## Data organization
-- SEP data: 
-  - Text: json-file / document
-  - Bib: json-file / document (not incl.)
-  - Relational data: json-file / document (not incl.)
-- Philpeople data:
-  - Only first author
-  - If several geotags for same location (uni), choose most appropriate
-  - json-file / document
-- Hence: **per document join**
-  - all file for same document have same name and ID, but are located in different folders
-
-## Scripts
-- [SEP scraper](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_standfordEnc.html)
-- [Philpeople Scraper](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_philpeople.html)
-- [Create Corpus](https://lucienbaumgartner.github.io/coliphi21/create_corpora/src/pres_make_corpus.html)
+# Back to R!
   
 
 

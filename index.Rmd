@@ -50,4 +50,11 @@ Hi! This is the online repository for CoLiPhi21:
 
 <br>  
 
+- Lucien Baumgartner II - Inductive Analytics:
+  - [Presentation](./practice_lessons/lesson_3/pres.html)
+  - [Code Reddit API Exercises](./practice_lessons/lesson_3/reddit_API.R)
+  - [Code Google Scholar Exercise](./practice_lessons/lesson_3/web_scraping.R)
+
+
+
 

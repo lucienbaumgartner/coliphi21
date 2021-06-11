@@ -89,6 +89,7 @@ str(df)
 ```{r}
 ## the document-level variables
 docvars(df) %>% head
+?table
 ```
 
 #### > Exercise {.tabset .tabset-fade}
@@ -97,7 +98,7 @@ Compute the number of Democrat and Republican speeches. Hint: checkout the `tabl
 
 ##### Solution
 ```{r}
-table(docvars(df)$Party)
+table(df$Party)
 ```
 
 
@@ -106,8 +107,13 @@ table(docvars(df)$Party)
 ## text data: how can we look at Biden's 2021 speech?
 txt <- as.character(df)
 names(txt)
+## subsetting data by logical vectors
+c('hi', 'hello', 'bye')[c(TRUE, FALSE, TRUE)]
+c('hi', 'hello', 'bye')[c(TRUE, FALSE, TRUE, TRUE)]
+c('hi', 'hello', 'bye')[c(TRUE, FALSE)]
 biden <- txt[grepl('Biden', names(txt))]
 cat(biden)
+## subsetting by name
 # select Washington's 1789 speech to compare
 cat(txt['1789-Washington'])
 ```
@@ -118,10 +124,10 @@ Extract both the Trump and Biden speech at the same time. Hint: `|` means OR in 
 
 ##### Solution
 ```{r}
-txt[grepl('Biden|Trump', names(txt))]
+l <- txt[grepl('Biden|Trump', names(txt))]
+l
+str(l)
 ```
-
-
 
 ### Word tokens and the document-term matrix
 
@@ -134,6 +140,7 @@ txt[grepl('Biden|Trump', names(txt))]
 ```{r}
 ## word tokenization
 ?tokens
+?dfm
 toks <- tokens(df, remove_punct = T, remove_symbols = T, padding = F)
 toks
 ## document-term matrix
@@ -175,7 +182,8 @@ Remove additional words that are not part of the stopwords-vector, such as "much
 
 ##### Solution
 ```{r}
-sel_toks <- tokens_select(toks, pattern = c(stopwords("en"), 'much', 'every', 'never'), selection = "remove")
+?tokens_select
+sel_toks <- tokens_select(toks, pattern = c(stopwords("en"), 'every', 'never'), selection = "remove", valuetype = "glob")
 ```
 
 
