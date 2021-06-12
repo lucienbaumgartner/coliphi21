@@ -117,7 +117,7 @@ toks <- tokens_replace(toks,
 ## remove stopwords
 toks <- tokens_select(toks,  pattern = stopwords("en"), selection = "remove")
 ## remove noise
-toks <- tokens_select(toks, pattern = '^[A-z]$|[0-9]+|^.$', valuetype = 'regex', selection = 'remove')
+toks <- tokens_select(toks, pattern = '[0-9]+|^.$', valuetype = 'regex', selection = 'remove')
 ## create dfm
 dfm_sfe <- dfm(toks) %>% 
            dfm_trim(min_termfreq = 0.8, termfreq_type = "quantile",
@@ -129,9 +129,6 @@ load('../input/steps/dfm_initial.RDS')
 ```
 ```{r}
 dfm_sfe
-topfeatures(dfm_sfe, n=200)
-df <- readtext('...')
-df<- corpus(df)
 ```
 
 #### > Exercise {.tabset .tabset-fade}
@@ -140,8 +137,9 @@ Check whether there is still some noise in the data and remove it. Hint: Scan th
 
 ##### Solution
 ```{r eval=FALSE}
-## remove phi
-toks <- tokens_select(toks, pattern = 'φ', valuetype = 'regex', selection = 'remove')
+topfeatures(dfm_sfe, n=200)
+## remove additional words
+toks <- tokens_select(toks, pattern = 'many|much', valuetype = 'regex', selection = 'remove')
 ## create dfm
 dfm_sfe <- dfm(toks) %>% 
            dfm_trim(min_termfreq = 0.8, termfreq_type = "quantile",
@@ -160,10 +158,11 @@ load('../input/ca/ca.RDS')
 ```
 ```{r fig.height=5, fig.width=10, fig.align='center'}
 ## coerce model coefficients to dataframe
+str(sfe_ca)
 sfe_ca <- data.frame(dim1 = coef(sfe_ca, doc_dim = 1)$coef_document, 
                      dim2 = coef(sfe_ca, doc_dim = 2)$coef_document)
 str(sfe_ca)
-sfe_ca$id <- gsub('\\.json(\\.[0-9])?', '', rownames(sfe_ca))
+sfe_ca$id <- gsub('\\.json.*', '', rownames(sfe_ca))
 head(sfe_ca)
 ## plot full data with branch annotation
 ggplot(sfe_ca, aes(x=dim1, y=dim2, label=id)) +
@@ -233,50 +232,36 @@ sfe_sub
 ## PoS-tagging
 sfe_pos <- spacy_parse(sfe_sub, pos = T, tag = T, lemma = T, entity = T, dependency = T)
 sfe_pos
-## look up which adjectives are used most frequently
-sfe_pos %>% 
-  filter(pos == 'ADJ') %>% 
-  group_by(token) %>% 
-  summarise(n.occurences = n()) %>% 
-  arrange(desc(n.occurences))
-## look up which nouns are preceded by the adjective "rational"
-rational_noun <- sfe_pos %>% filter(pos == 'NOUN' & lag(token, 1) == 'rational')
-rational_noun
-# get top 2 nouns per document
-rational_noun %>% 
-  group_by(doc_id, token) %>% 
-  summarise(n.occurences = n()) %>% 
-  arrange(doc_id, desc(n.occurences)) %>% 
-  slice(1:2)
 ```
 
 ## Augment your sandbox
 ```{r}
-## to create a corpus-object from your pos-tagged tokens
-## we need unique IDs
+## aggregate tokens and pos-tags back to documents
+sfe_pos <- sfe_pos %>% rowwise %>% mutate(token_pos = paste0(token,'__', pos)) 
 sfe_pos
-str(sfe_pos)
-## make doc_ids unique
-sfe_pos <- mutate(sfe_pos, doc_id = make.unique(doc_id))
-## remove punctuation and spaces
-sfe_pos <- filter(sfe_pos, !pos %in% c('PUNCT', 'SPACE'))
-str(sfe_pos)
-## make token corpus
-sfe_pos <- corpus(sfe_pos, text_field = 'token', docid_field = 'doc_id')
+sfe_pos <- sfe_pos %>% 
+  group_by(doc_id) %>% 
+  summarise(text = paste0(token_pos, collapse = ' '))
 sfe_pos
-docvars(sfe_pos)
-## WARNING! This data-structure is incompatible with our document-based corpus!!!
-docvars(sfe_sub)
-## ... but we can add the info to our token corpus
-# add initial document ID to both sets of docvars
-docvars(sfe_pos)$initial_docid <- gsub('\\.json.*', '', docid(sfe_pos))
-docvars(sfe_sub)$initial_docid <- gsub('\\.json.*', '', docid(sfe_sub))
-# join by initial id
-docvars(sfe_pos) <- left_join(docvars(sfe_pos), docvars(sfe_sub), by = 'initial_docid')
-docvars(sfe_pos)
-## Keep in mind: your corpus is still on token level!
+## import it to quanteda and add metadata
+sfe_pos <- corpus(sfe_pos)
+docvars(sfe_pos) <- docvars(sfe_sub)
+sfe_pos
+## get all the nouns preceded by the adjective 'rational'
+rational_noun <- stri_match_all(sfe_pos, regex = '(?<=rational__ADJ\\s)[A-z]+__NOUN')
+names(rational_noun) <- docnames(sfe_pos)
+rational_noun
+rational_noun <- data.frame(match = do.call(rbind, rational_noun),
+       doc_id = rep(names(rational_noun), lengths(rational_noun)))
+rational_noun
+## count them
+rational_noun %>% 
+  na.omit %>% 
+  group_by(doc_id, match) %>% 
+  summarise(n = n()) %>% 
+  arrange(doc_id, desc(n)) %>% 
+  print(n=200)
 ```
-
 
 ## Additional material
 
