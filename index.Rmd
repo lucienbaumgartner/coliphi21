@@ -32,7 +32,7 @@ Hi! This is the online repository for CoLiPhi21:
 
 - Justin Sytsma II - Causal Attributions and Corpus Analysis:
   - [Presentation](./practice_lessons/justin/2nd/Causal Attributions and Corpus Analysis.pdf)
-  - [Data](./practice_lessons/justin/2nd/data/causal_attribution.zip)
+  - [Data](./practice_lessons/justin/2nd/causal_attribution.zip)
  
 <br>
 
@@ -50,11 +50,12 @@ Hi! This is the online repository for CoLiPhi21:
 
 <br>  
 
-- Lucien Baumgartner II - Inductive Analytics:
+- Lucien Baumgartner III - Text Mining:
   - [Presentation](./practice_lessons/lesson_3/pres.html)
   - [Code Reddit API Exercises](./practice_lessons/lesson_3/reddit_API.R)
   - [Code Google Scholar Exercise](./practice_lessons/lesson_3/web_scraping.R)
 
-
+<br>
+<br>  
 
 

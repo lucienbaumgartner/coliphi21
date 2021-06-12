@@ -18,7 +18,7 @@ str(response, max.level = 2)
 df <- response$data
 View(df)
 ## have a look at the texts
-df$body
+cat(df$body)
 
 ## AND: phenomenology AND Hegel
 ################################

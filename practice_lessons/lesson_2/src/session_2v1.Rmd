@@ -75,6 +75,16 @@ load('../input/stanford-encyclopedia.RDS')
 load('~/coliphi21/practice_lessons/lesson_2/input/stanford-encyclopedia.RDS')
 ```
 
+### If you work with your own corpus
+```{r eval=FALSE}
+## either
+sfe <- readtext('path/to/you/data')
+## or
+sfe <- readtext('path/to/you/data', text_field = 'name_of_text_var', docid_field = 'id_var')
+## then
+sfe <- corpus(sfe)
+```
+
 #### Disclaimer
 Loading the data above will import a pre-built corpus object into R, which is called `sfe`.
 
@@ -97,6 +107,7 @@ Familiarize yourself a little more with the data.
 toks <- tokens(sfe, what = 'word',
                remove_punct = T, remove_symbols = T, padding = F, 
                remove_numbers = T, remove_url = T)
+?tokens
 ## to lower
 toks <- tokens_tolower(toks)
 ## lemmatizing
@@ -119,6 +130,8 @@ load('../input/steps/dfm_initial.RDS')
 ```{r}
 dfm_sfe
 topfeatures(dfm_sfe, n=200)
+df <- readtext('...')
+df<- corpus(df)
 ```
 
 #### > Exercise {.tabset .tabset-fade}
@@ -149,9 +162,9 @@ load('../input/ca/ca.RDS')
 ## coerce model coefficients to dataframe
 sfe_ca <- data.frame(dim1 = coef(sfe_ca, doc_dim = 1)$coef_document, 
                      dim2 = coef(sfe_ca, doc_dim = 2)$coef_document)
-
+str(sfe_ca)
 sfe_ca$id <- gsub('\\.json(\\.[0-9])?', '', rownames(sfe_ca))
-sfe_ca
+head(sfe_ca)
 ## plot full data with branch annotation
 ggplot(sfe_ca, aes(x=dim1, y=dim2, label=id)) +
   geom_point(aes(color=dim1-dim2), alpha = 0.2) +
@@ -242,10 +255,12 @@ rational_noun %>%
 ## to create a corpus-object from your pos-tagged tokens
 ## we need unique IDs
 sfe_pos
+str(sfe_pos)
 ## make doc_ids unique
 sfe_pos <- mutate(sfe_pos, doc_id = make.unique(doc_id))
 ## remove punctuation and spaces
 sfe_pos <- filter(sfe_pos, !pos %in% c('PUNCT', 'SPACE'))
+str(sfe_pos)
 ## make token corpus
 sfe_pos <- corpus(sfe_pos, text_field = 'token', docid_field = 'doc_id')
 sfe_pos
