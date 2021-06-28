@@ -8,7 +8,7 @@ rm(list=ls())
 ## simple comment-query on reddit
 #################################
 ## formulate query
-search.term <- 'phenomonology'
+search.term <- 'parrot'
 query <- paste0('https://api.pushshift.io/reddit/search/comment/?q=', search.term)
 query
 response <- fromJSON(query, flatten = TRUE)
@@ -19,6 +19,11 @@ df <- response$data
 View(df)
 ## have a look at the texts
 cat(df$body)
+## make corpus
+corp <- corpus(df, text_field = 'body', docid_field = 'id')
+corp
+tibble(docvars(corp))
+
 
 ## AND: phenomenology AND Hegel
 ################################

@@ -78,7 +78,7 @@ load('~/coliphi21/practice_lessons/lesson_2/input/stanford-encyclopedia.RDS')
 ### If you work with your own corpus
 ```{r eval=FALSE}
 ## either
-sfe <- readtext('path/to/you/data')
+sfe <- readtext('path/to/you/data/*')
 ## or
 sfe <- readtext('path/to/you/data', text_field = 'name_of_text_var', docid_field = 'id_var')
 ## then
@@ -122,6 +122,7 @@ toks <- tokens_select(toks, pattern = '[0-9]+|^.$', valuetype = 'regex', selecti
 dfm_sfe <- dfm(toks) %>% 
            dfm_trim(min_termfreq = 0.8, termfreq_type = "quantile",
                     max_docfreq = 0.1, docfreq_type = "prop")
+?dfm_trim
 ```
 ```{r echo=FALSE}
 #save(dfm_sfe, file = '../input/steps/dfm_initial.RDS')
@@ -150,7 +151,7 @@ dfm_sfe <- dfm(toks) %>%
 ## Scaling: correspondence analysis
 ```{r eval=FALSE}
 ## compute model
-sfe_ca <- textmodel_ca(dfm_sfe)
+sfe_ca <- quanteda.textmodels::textmodel_ca(dfm_sfe)
 ```
 ```{r echo=FALSE}
 #save(sfe_ca, file = '../input/ca/ca.RDS')
@@ -194,12 +195,14 @@ load('../input/lda/lda_k10.RDS')
 ## run naive unsupervised topic model with 10 topics
 set.seed(123)
 sfe_lda <- textmodel_lda(dfm_sfe, k = 10)
+?textmodel_lda
 ```
 ```{r fig.height=5, fig.width=10}
 ## print top 20 terms per topic
 terms(sfe_lda, 20)
 ## plot the topics over the correspondence analysis data
 sfe_ca$topics <- topics(sfe_lda)
+head(sfe_ca)
 ggplot(sfe_ca, aes(x=dim1, y=dim2, color=topics)) +
   geom_point(alpha = 0.5, shape = '.') +
   geom_density_2d(alpha = 0.5) +

@@ -30,6 +30,9 @@ pdf_nodes_2
 ## extract actual links
 links <- html_attr(pdf_nodes_2, 'href') 
 links
+for(i in links){
+  i
+}
 ## download a file
 ?download.file
 download.file(links[1], destfile = 'testfile.pdf')
